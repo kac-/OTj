@@ -6,6 +6,8 @@ Low-level client-side library for [Open Transactions](https://github.com/FellowT
 --
 [CreateUserAccountExample](/src/main/java/com/kactech/otj/examples/CreateUserAccountExample.java)
 
+[DeepDecoderGUI](/src/main/java/com/kactech/otj/tools/gui/DeepDecoderGUI.java) - simple GUI App that lets you decode messages till the last readable string
+
 Soon more...
 
 --
