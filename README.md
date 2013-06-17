@@ -9,7 +9,7 @@ Right now it's planar-procedural-toolkit for basic communication. What it will b
 Prepublication TODO list
 * project name( group, artifact id)
 * java 1.7 requirement acceptable?
-* choose license
+* ~~choose license~~ **LAGPL** license
 * filter [third-party](third-party.md)
 * code formatting/commenting convention
 
