@@ -8,6 +8,8 @@ Low-level client-side library for [Open Transactions](https://github.com/FellowT
 
 [DeepDecoderGUI](/src/main/java/com/kactech/otj/tools/gui/DeepDecoderGUI.java) - simple GUI App that lets you decode messages till the last readable string
 
+[DirtyClientExample](/src/main/java/com/kactech/otj/examples/DirtyClientExample.java) - quick and dirty simple client implementation, three OTX calls involved
+
 Soon more...
 
 --
