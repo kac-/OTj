@@ -114,7 +114,6 @@
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
 			<version>1.4.4</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<repositories>

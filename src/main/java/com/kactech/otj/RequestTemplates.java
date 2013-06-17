@@ -140,4 +140,32 @@ public class RequestTemplates {
 		st.write(wr, Locale.getDefault());
 		return out.toString();
 	}
+
+	public static String buildGetRequest(String nymID, String serverID) throws InvalidKeyException,
+			SignatureException {
+		StringBuilder b = new StringBuilder()
+				.append("<?xml version=\"1.0\"?>\n")
+				.append("<OTmessage version=\"1.0\">\n")
+				.append("<getRequest\n")
+				.append(" nymID=\"").append(nymID).append("\"\n")
+				.append(" serverID=\"").append(serverID).append("\"\n")
+				.append(" requestNum=\"1\">\n\n")
+				.append("</getRequest>")
+				.append("</OTmessage>\n");
+		return b.toString();
+	}
+
+	public static String buildCheckUser(String nymID, String serverID, int requestNum, String nymID2) {
+		return new StringBuilder()
+				.append("<?xml version=\"1.0\"?>\n")
+				.append("<OTmessage version=\"1.0\">\n")
+				.append("<checkUser\n")
+				.append(" nymID=\"").append(nymID).append("\"\n")
+				.append(" serverID=\"").append(serverID).append("\"\n")
+				.append(" requestNum=\"").append(requestNum).append("\"\n")
+				.append(" nymID2=\"").append(nymID2).append("\">\n")
+				.append("</checkUser>\n")
+				.append("</OTmessage>\n")
+				.toString();
+	}
 }
