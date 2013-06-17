@@ -4,7 +4,7 @@ OTj
 Low-level client-side library for [Open Transactions](https://github.com/FellowTraveler/Open-Transactions) in Java
 
 --
-[CreateUserAccountExample](/kactech/OTj/blob/master/src/main/java/com/kactech/otj/examples/CreateUserAccountExample.java)
+[CreateUserAccountExample](/src/main/java/com/kactech/otj/examples/CreateUserAccountExample.java)
 
 Soon more...
 
