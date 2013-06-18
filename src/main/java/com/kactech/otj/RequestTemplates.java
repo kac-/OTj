@@ -51,11 +51,16 @@
 package com.kactech.otj;
 
 import java.io.StringWriter;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
+import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 
 import org.stringtemplate.v4.NoIndentWriter;
 import org.stringtemplate.v4.ST;
@@ -141,6 +146,19 @@ public class RequestTemplates {
 		return out.toString();
 	}
 
+	public static String buildSimpleRequest(String nymID, String serverID, int requestNum, String cmd) {
+		StringBuilder b = new StringBuilder()
+				.append("<?xml version=\"1.0\"?>\n")
+				.append("<OTmessage version=\"1.0\">\n")
+				.append("<").append(cmd).append("\n")
+				.append(" nymID=\"").append(nymID).append("\"\n")
+				.append(" serverID=\"").append(serverID).append("\"\n")
+				.append(" requestNum=\"").append(requestNum).append("\">\n\n")
+				.append("</").append(cmd).append("\n")
+				.append("</OTmessage>\n");
+		return b.toString();
+	}
+
 	public static String buildGetRequest(String nymID, String serverID) throws InvalidKeyException,
 			SignatureException {
 		StringBuilder b = new StringBuilder()
@@ -167,5 +185,42 @@ public class RequestTemplates {
 				.append("</checkUser>\n")
 				.append("</OTmessage>\n")
 				.toString();
+	}
+
+	public static String buildSendUserMessage(String message, String nymID, String serverID, int requestNum,
+			String nymID2,
+			RSAPublicKey nym2PublicKey) throws InvalidKeyException, InvalidAlgorithmParameterException,
+			IllegalBlockSizeException, BadPaddingException {
+		byte[] encoded = Utils.seal(message, nymID2, nym2PublicKey);
+		String payload = new String(encoded, Utils.US_ASCII);
+		return new StringBuilder()
+				.append("<?xml version=\"1.0\"?>\n")
+				.append("<OTmessage version=\"1.0\">\n")
+				.append("<sendUserMessage\n")
+				.append(" nymID=\"").append(nymID).append("\"\n")
+				.append(" serverID=\"").append(serverID).append("\"\n")
+				.append(" requestNum=\"").append(requestNum).append("\"\n")
+				.append(" nymID2=\"").append(nymID2).append("\">\n")
+				.append("<messagePayload>\n").append(payload).append("</messagePayload>\n")
+				.append("</sendUserMessage>\n")
+				.append("</OTmessage>\n")
+				.toString();
+	}
+
+	public static String buildGetBoxReceipt(String nymID, String serverID, int requestNum, String accountID,
+			String boxType, int transactionNum) {
+		StringBuilder b = new StringBuilder()
+				.append("<?xml version=\"1.0\"?>\n")
+				.append("<OTmessage version=\"1.0\">\n")
+				.append("<getBoxReceipt\n")
+				.append(" nymID=\"").append(nymID).append("\"\n")
+				.append(" serverID=\"").append(serverID).append("\"\n")
+				.append(" accountID=\"").append(accountID).append("\"\n")
+				.append(" requestNum=\"").append(requestNum).append("\"\n")
+				.append(" transactionNum=\"").append(transactionNum).append("\"\n")
+				.append(" boxType=\"").append(boxType).append("\">\n")
+				.append("</getBoxReceipt>")
+				.append("</OTmessage>\n");
+		return b.toString();
 	}
 }

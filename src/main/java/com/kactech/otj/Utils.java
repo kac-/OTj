@@ -203,6 +203,8 @@ public class Utils {
 		byte[] buffer = new byte[1024];
 		while (!inflater.finished()) {
 			int count = inflater.inflate(buffer);
+			if (count == 0)
+				throw new DataFormatException("probably bad, has infinite loop at encoded message");
 			outputStream.write(buffer, 0, count);
 		}
 		outputStream.close();

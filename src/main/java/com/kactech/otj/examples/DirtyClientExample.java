@@ -121,6 +121,9 @@ public class DirtyClientExample {
 
 	public static void main(String[] args) throws Exception {
 		Client client = buildClient();
+		// send message to Trader Bob
+		String recipientNymID = "SP8rPHc6GMRPL517UL5J8RK2yOiToyVqMaj3PUHvLzM";
+		String message = "Subject: hello from Java\ngood morning!";
 		try {
 			int reqNum;
 			/*
@@ -135,20 +138,25 @@ public class DirtyClientExample {
 					throw new RuntimeException("cannot create user account on server");
 				reqNum = client.getRequest();
 			}
-			// check Trader Bob's nymID
-			Messages.CheckUser checkUser = client.checkUser("SP8rPHc6GMRPL517UL5J8RK2yOiToyVqMaj3PUHvLzM", reqNum);
-			// if user has credentials take his master
-			if (checkUser.getContent().hasCredentials()) {
-				String string = checkUser.getContent().getCredentialList().getUncompressed();
-				// parse credentials list
-				Messages.OTuser credentialList = Messages.parseResponse(string, Messages.OTuser.class);
-				// and get master credential
-				String masterCredential = checkUser.getContent().getCredentials()
-						.get(credentialList.getMasterCredential().getID());
-				System.out.println("got master credential\n" + masterCredential);
-			} else { // he has only nymPublicKey
-				System.out.println("got only public key\n" + checkUser.getContent().getNymPublicKey());
+
+			Messages.CheckUser cu = client.checkUser(recipientNymID, reqNum);
+			// if user has credentials take his nymIDSource, for public key
+			RSAPublicKey recipientPublicKey;
+			if (cu.getContent().hasCredentials()) {
+				Messages.OTuser credentialList = Messages.parseResponse(cu.getContent().getCredentialList()
+						.getUncompressed(),
+						Messages.OTuser.class);
+				String nymIDSource = credentialList.getNymIDSource().getRaw();
+				recipientPublicKey = (RSAPublicKey) Utils.fromIDSource(nymIDSource);
+			} else {
+				String str = Utils.unarmor(cu.getContent().getNymPublicKey(), true);
+				byte[] packed = Utils.base64Decode(str);
+				str = Utils.unpack(packed, String.class);
+				recipientPublicKey = Utils.pemReadRSAPublicKey(str);
 			}
+			Messages.SendUserMessage msg = client.sendUserMessage(message,
+					recipientNymID, recipientPublicKey, null);
+			System.out.println("message sent: " + msg.getContent().isSuccess());
 
 		} finally {
 			client.close();// close, else thread may hang

@@ -130,7 +130,8 @@ public class DeepDecoder implements Flushable, Closeable {
 				writer.println(isum + "<!-- TEXT -->\n" + str + "\n" + isum + "<!-- !TEXT -->");
 			return;
 		}
-		if (str.startsWith("<?xml ") || str.startsWith("<keyCredential") || str.startsWith("<masterCredential")) {
+		if (str.startsWith("<?xml ") || str.startsWith("<keyCredential")
+				|| str.startsWith("<masterCredential") || str.startsWith("<transaction ")) {
 			//str = str.replaceFirst("(<\\?xml .*?\\?>)", "<!-- $1 -->");
 			str = str.replace("<?xml version=\"2.0\"", "<?xml version=\"1.0\"");
 			str = str.replace("<@", "<").replace("</@", "</");

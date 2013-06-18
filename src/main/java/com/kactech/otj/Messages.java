@@ -51,6 +51,7 @@
 
 package com.kactech.otj;
 
+import java.nio.ByteBuffer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -193,6 +194,96 @@ public class Messages {
 		}
 	}
 
+	@XStreamAlias("OTmessage")
+	public static class SendUserMessage extends OTMessage {
+		@XStreamAlias("sendUserMessage")
+		Content content;
+		String ackReplies;//TODO
+
+		public static class Content extends OTRequest {
+			@XStreamAsAttribute
+			String nymID2;
+			PackedData messagePayload;
+
+			public String getNymID2() {
+				return nymID2;
+			}
+
+			public PackedData getMessagePayload() {
+				return messagePayload;
+			}
+		}
+
+		public Content getContent() {
+			return content;
+		}
+	}
+
+	@XStreamAlias("OTmessage")
+	public static class GetNymbox extends OTMessage {
+		@XStreamAlias("getNymbox")
+		Content content;
+
+		public static class Content extends OTRequest {
+			@XStreamAsAttribute
+			String nymboxHash;
+			CompressedString nymboxLedger;
+
+			public String getNymboxHash() {
+				return nymboxHash;
+			}
+
+			public CompressedString getNymboxLedger() {
+				return nymboxLedger;
+			}
+		}
+
+		public Content getContent() {
+			return content;
+		}
+	}
+
+	@XStreamAlias("OTmessage")
+	public static class GetBoxReceipt extends OTMessage {
+		@XStreamAlias("getBoxReceipt")
+		Content content;
+
+		public static class Content extends OTRequest {
+			@XStreamAsAttribute
+			String accountID;
+			@XStreamAsAttribute
+			String boxType;
+			@XStreamAsAttribute
+			int transactionNum;
+			CompressedString inReferenceTo;
+			CompressedString boxReceipt;
+
+			public String getAccountID() {
+				return accountID;
+			}
+
+			public String getBoxType() {
+				return boxType;
+			}
+
+			public int getTransactionNum() {
+				return transactionNum;
+			}
+
+			public CompressedString getInReferenceTo() {
+				return inReferenceTo;
+			}
+
+			public CompressedString getBoxReceipt() {
+				return boxReceipt;
+			}
+		}
+
+		public Content getContent() {
+			return content;
+		}
+	}
+
 	public static class CompressedString {
 		String raw;
 		String uncompressed;
@@ -292,6 +383,48 @@ public class Messages {
 		};
 	}
 
+	@SuppressWarnings("serial")
+	public static class PackedData {
+		String raw;
+		byte[] data;
+		public static final Converter converter = new Converter() {
+
+			@Override
+			public boolean canConvert(Class type) {
+				return type == PackedData.class;
+			}
+
+			@Override
+			public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+				PackedData data = new PackedData();
+				data.raw = reader.getValue();
+				data.data = Utils.base64Decode(data.raw.trim());
+				try {
+					data.data = Utils.unpack(data.data, byte[].class);
+				} catch (PackerException e) {
+					throw new RuntimeException(e);
+				}
+				return data;
+			}
+
+			@Override
+			public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+				PackedData data = (PackedData) source;
+				byte[] by = Utils.pack(ByteBuffer.wrap(data.data));
+				data.raw = Utils.base64EncodeString(by, true);
+				writer.setValue("\n" + data.raw);
+			}
+		};
+
+		public byte[] getData() {
+			return data;
+		}
+
+		public String getRaw() {
+			return raw;
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	public static <T> T parseResponse(String unsigned, Class<T> clazz) {
 		unsigned = unsigned.replace("<@", "<").replace("</@", "</");
@@ -299,6 +432,7 @@ public class Messages {
 		XStream xstream = new XStream();
 		xstream.registerConverter(CompressedString.converter);
 		xstream.registerConverter(StringMap.converter);
+		xstream.registerConverter(PackedData.converter);
 		xstream.processAnnotations(clazz);
 		return (T) xstream.fromXML(unsigned);
 	}
@@ -348,5 +482,114 @@ public class Messages {
 			return keyCredential;
 		}
 
+	}
+
+	@XStreamAlias("accountLedger")
+	public static class AccountLedger {
+		@XStreamAsAttribute
+		String version;
+		@XStreamAsAttribute
+		String type;
+		@XStreamAsAttribute
+		int numPartialRecords;
+		@XStreamAsAttribute
+		String accountID;
+		@XStreamAsAttribute
+		String userID;
+		@XStreamAsAttribute
+		String serverID;
+		NymboxRecord nymboxRecord;
+
+		public static class NymboxRecord {
+			@XStreamAsAttribute
+			String type;
+			@XStreamAsAttribute
+			long dateSigned;
+			@XStreamAsAttribute
+			String receiptHash;
+			@XStreamAsAttribute
+			int transactionNum;
+			@XStreamAsAttribute
+			int inRefDisplay;
+			@XStreamAsAttribute
+			int inReferenceTo;
+
+			public String getType() {
+				return type;
+			}
+
+			public long getDateSigned() {
+				return dateSigned;
+			}
+
+			public String getReceiptHash() {
+				return receiptHash;
+			}
+
+			public int getTransactionNum() {
+				return transactionNum;
+			}
+
+			public int getInRefDisplay() {
+				return inRefDisplay;
+			}
+
+			public int getInReferenceTo() {
+				return inReferenceTo;
+			}
+
+			@Override
+			public String toString() {
+				return "NymboxRecord [type=" + type + ", dateSigned=" + dateSigned + ", receiptHash=" + receiptHash
+						+ ", transactionNum=" + transactionNum + ", inRefDisplay=" + inRefDisplay + ", inReferenceTo="
+						+ inReferenceTo + "]";
+			}
+
+		}
+
+		public String getVersion() {
+			return version;
+		}
+
+		public String getType() {
+			return type;
+		}
+
+		public int getNumPartialRecords() {
+			return numPartialRecords;
+		}
+
+		public String getAccountID() {
+			return accountID;
+		}
+
+		public String getUserID() {
+			return userID;
+		}
+
+		public String getServerID() {
+			return serverID;
+		}
+
+		public NymboxRecord getNymboxRecord() {
+			return nymboxRecord;
+		}
+
+		@Override
+		public String toString() {
+			return "AccountLedger [version=" + version + ", type=" + type + ", numPartialRecords=" + numPartialRecords
+					+ ", accountID=" + accountID + ", userID=" + userID + ", serverID=" + serverID + ", nymboxRecord="
+					+ nymboxRecord + "]";
+		}
+
+	}
+
+	@XStreamAlias("transaction")
+	public static class Transaction extends AccountLedger.NymboxRecord {
+		CompressedString inReferenceTo;
+
+		public CompressedString getInReferenceToContent() {
+			return inReferenceTo;
+		}
 	}
 }

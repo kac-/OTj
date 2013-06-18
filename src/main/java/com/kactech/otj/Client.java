@@ -163,4 +163,35 @@ public class Client implements Closeable {
 		return Messages.parseResponse(resp, Messages.CheckUser.class);
 	}
 
+	public Messages.SendUserMessage sendUserMessage(String message, String recipientNymID,
+			RSAPublicKey recipientPublicKey,
+			Integer requestNum) {
+		if (requestNum == null)
+			requestNum = getRequest();
+		try {
+			String req = RequestTemplates.buildSendUserMessage(message, getAccount().getNymID(), getServerID(),
+					requestNum, recipientNymID, recipientPublicKey);
+			String resp = send(req);
+			return Messages.parseResponse(resp, Messages.SendUserMessage.class);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public Messages.GetNymbox getNymbox(Integer requestNum) {
+		if (requestNum == null)
+			requestNum = getRequest();
+		String req = RequestTemplates.buildSimpleRequest(getAccount().getNymID(), serverID, requestNum, "getNymbox");
+		String resp = send(req);
+		return Messages.parseResponse(resp, Messages.GetNymbox.class);
+	}
+
+	public String getBoxReceipt(String accountID, String boxType, int transactionNum) {
+		int requestNum = getRequest();
+		String req = RequestTemplates.buildGetBoxReceipt(account.getNymID(), serverID, requestNum, accountID, boxType,
+				transactionNum);
+		//System.out.println(req);
+		String resp = send(req);
+		return resp;
+	}
 }
