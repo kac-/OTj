@@ -48,75 +48,63 @@
  * PURPOSE. See the GNU Affero General Public License for
  * more details.
  ******************************************************************************/
-package com.kactech.otj.tools.gui;
+package com.kactech.otj;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.IOException;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
+import org.zeromq.ZContext;
+import org.zeromq.ZMQ;
+import org.zeromq.ZMsg;
+import org.zeromq.ZMQ.PollItem;
+import org.zeromq.ZMQ.Socket;
 
-import com.kactech.otj.tools.DeepDecoder;
+public class JeromqTransport implements Transport {
+	String endpoint;
+	long timeout;
 
-/**
- * GUI for {@link com.kactech.otj.tools.DeepDecoder}
- * 
- * @author Piotr Kopeć (kactech)
- * 
- */
-@SuppressWarnings("serial")
-public class DeepDecoderGUI extends JPanel implements ActionListener {
-	JTextArea text = new JTextArea();
-	JButton decode = new JButton("decode");
+	ZContext ctx;
+	Socket socket;
 
-	public DeepDecoderGUI() {
-		super(new BorderLayout());
-		decode.addActionListener(this);
-		text.setEditable(true);
-		add(decode, BorderLayout.NORTH);
-		add(new JScrollPane(text), BorderLayout.CENTER);
+	public JeromqTransport(String endpoint) {
+		this(endpoint, 1, 1000l);
+	}
+
+	public JeromqTransport(String endpoint, int ioThreads, long timeout) {
+		super();
+		this.endpoint = endpoint;
+		this.timeout = timeout;
+		this.ctx = new ZContext(ioThreads);
+	}
+
+	synchronized Socket getSocket() {
+		if (this.socket == null) {
+			Socket socket = ctx.createSocket(ZMQ.REQ);
+			socket.connect(endpoint);
+			this.socket = socket;
+		}
+		return this.socket;
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
-		String str = text.getText();
+	public byte[] send(byte[] message) {
+		ZMsg request = new ZMsg();
+		request.add(message);
+		Socket socket = getSocket();
+		request.send(socket);
+		PollItem[] items = { new PollItem(socket, ZMQ.Poller.POLLIN) };
+		ZMQ.poll(items, timeout);
+		ZMsg reply = null;
+		if (items[0].isReadable())
+			reply = ZMsg.recvMsg(socket);
+		return reply != null ? reply.pop().getData() : null;
+	}
 
-		try {
-			StringWriter w = new StringWriter();
-			DeepDecoder dd = new DeepDecoder(new PrintWriter(w), "   ");
-			dd.process(str);
-			dd.flush();
-			dd.close();
-			str = w.getBuffer().toString();
-			text.setText(str);
-		} catch (Exception e1) {
-			e1.printStackTrace();
+	@Override
+	public void close() throws IOException {
+		if (this.ctx != null) {
+			this.ctx.close();
+			this.ctx = null;
+			this.socket = null;
 		}
-	}
-
-	static void createAndShowGUI() {
-		JFrame f = new JFrame();
-		DeepDecoderGUI dd = new DeepDecoderGUI();
-		f.getContentPane().add(dd);
-		f.setSize(800, 600);
-		f.setVisible(true);
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
-
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				createAndShowGUI();
-			}
-		});
 	}
 }

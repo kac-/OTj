@@ -48,75 +48,83 @@
  * PURPOSE. See the GNU Affero General Public License for
  * more details.
  ******************************************************************************/
-package com.kactech.otj.tools.gui;
+package com.kactech.otj.model;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.Serializable;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
+import com.kactech.otj.Utils;
 
-import com.kactech.otj.tools.DeepDecoder;
+public class BasicUserAccount implements UserAccount, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2214023813587855333L;
+	String nymID;
+	String nymIDSource;
+	static final String[] keyNames = { "A", "E", "S" };
+	Map<String, KeyPair> pairs = new LinkedHashMap<String, KeyPair>();
+	Map<String, KeyPair> cpairs = new LinkedHashMap<String, KeyPair>();
+	Map<String, String> sources = new LinkedHashMap<String, String>();
+	Map<String, String> csources = new LinkedHashMap<String, String>();
 
-/**
- * GUI for {@link com.kactech.otj.tools.DeepDecoder}
- * 
- * @author Piotr Kopeć (kactech)
- * 
- */
-@SuppressWarnings("serial")
-public class DeepDecoderGUI extends JPanel implements ActionListener {
-	JTextArea text = new JTextArea();
-	JButton decode = new JButton("decode");
-
-	public DeepDecoderGUI() {
-		super(new BorderLayout());
-		decode.addActionListener(this);
-		text.setEditable(true);
-		add(decode, BorderLayout.NORTH);
-		add(new JScrollPane(text), BorderLayout.CENTER);
+	public BasicUserAccount generate() {
+		KeyPairGenerator kpg;
+		try {
+			kpg = KeyPairGenerator.getInstance("RSA");
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		}
+		kpg.initialize(1024);
+		for (String keyName : keyNames) {
+			KeyPair kp = kpg.generateKeyPair();
+			pairs.put(keyName, kp);
+			sources.put(keyName, Utils.toPemPackedEncodedArmored(kp.getPublic(), false));
+			kp = kpg.generateKeyPair();
+			cpairs.put(keyName, kp);
+			csources.put(keyName, Utils.toPemPackedEncodedArmored(kp.getPublic(), false));
+		}
+		nymIDSource = Utils.toPemPackedEncodedArmored(pairs.get("S").getPublic(), true);
+		nymID = Utils.toNymID(pairs.get("S").getPublic());
+		return this;
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
-		String str = text.getText();
-
-		try {
-			StringWriter w = new StringWriter();
-			DeepDecoder dd = new DeepDecoder(new PrintWriter(w), "   ");
-			dd.process(str);
-			dd.flush();
-			dd.close();
-			str = w.getBuffer().toString();
-			text.setText(str);
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
+	public Map<String, KeyPair> getPairs() {
+		return pairs;
 	}
 
-	static void createAndShowGUI() {
-		JFrame f = new JFrame();
-		DeepDecoderGUI dd = new DeepDecoderGUI();
-		f.getContentPane().add(dd);
-		f.setSize(800, 600);
-		f.setVisible(true);
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	@Override
+	public Map<String, KeyPair> getCpairs() {
+		return cpairs;
 	}
 
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable() {
+	@Override
+	public Map<String, String> getSources() {
+		return sources;
+	}
 
-			@Override
-			public void run() {
-				createAndShowGUI();
-			}
-		});
+	@Override
+	public Map<String, String> getCsources() {
+		return csources;
+	}
+
+	@Override
+	public KeyPair getNymKeyPair() {
+		return pairs.get("S");
+	}
+
+	@Override
+	public String getNymID() {
+		return nymID;
+	}
+
+	@Override
+	public String getNymIDSource() {
+		return nymIDSource;
 	}
 }

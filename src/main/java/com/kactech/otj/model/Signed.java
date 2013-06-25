@@ -8,7 +8,7 @@
  * 
  * BITCOIN: 1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp
  * 
- * OFFICIAL PROJECT PAGE:https://github.com/kactech/OTj
+ * OFFICIAL PROJECT PAGE: https://github.com/kactech/OTj
  * 
  * -------------------------------------------------------
  * 
@@ -51,7 +51,6 @@
 package com.kactech.otj.model;
 
 import java.util.List;
-
 
 public interface Signed {
 

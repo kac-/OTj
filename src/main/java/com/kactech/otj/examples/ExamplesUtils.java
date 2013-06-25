@@ -48,75 +48,59 @@
  * PURPOSE. See the GNU Affero General Public License for
  * more details.
  ******************************************************************************/
-package com.kactech.otj.tools.gui;
+package com.kactech.otj.examples;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
+import com.kactech.otj.Utils;
+import com.thoughtworks.xstream.XStream;
 
-import com.kactech.otj.tools.DeepDecoder;
-
-/**
- * GUI for {@link com.kactech.otj.tools.DeepDecoder}
- * 
- * @author Piotr Kopeć (kactech)
- * 
- */
-@SuppressWarnings("serial")
-public class DeepDecoderGUI extends JPanel implements ActionListener {
-	JTextArea text = new JTextArea();
-	JButton decode = new JButton("decode");
-
-	public DeepDecoderGUI() {
-		super(new BorderLayout());
-		decode.addActionListener(this);
-		text.setEditable(true);
-		add(decode, BorderLayout.NORTH);
-		add(new JScrollPane(text), BorderLayout.CENTER);
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		String str = text.getText();
-
+public class ExamplesUtils {
+	public static void serializeJava(Path path, Object obj) {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		try {
-			StringWriter w = new StringWriter();
-			DeepDecoder dd = new DeepDecoder(new PrintWriter(w), "   ");
-			dd.process(str);
-			dd.flush();
-			dd.close();
-			str = w.getBuffer().toString();
-			text.setText(str);
-		} catch (Exception e1) {
-			e1.printStackTrace();
+			ObjectOutputStream oos = new ObjectOutputStream(bos);
+			oos.writeObject(obj);
+			oos.flush();
+			oos.close();
+			Utils.writeDirs(path, bos.toByteArray());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 
-	static void createAndShowGUI() {
-		JFrame f = new JFrame();
-		DeepDecoderGUI dd = new DeepDecoderGUI();
-		f.getContentPane().add(dd);
-		f.setSize(800, 600);
-		f.setVisible(true);
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	public static Object deserializeJava(Path path) {
+		Object obj;
+		try {
+			ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Files.readAllBytes(path)));
+			obj = ois.readObject();
+			ois.close();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		return obj;
 	}
 
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable() {
+	public static void serializeXStream(Path path, Object obj) {
+		try {
+			Utils.writeDirs(path, new XStream().toXML(obj));
+		} catch (IOException e) {
+			// test environment- just hide it
+			throw new RuntimeException(e);
+		}
+	}
 
-			@Override
-			public void run() {
-				createAndShowGUI();
-			}
-		});
+	public static Object deserializeXStream(Path path) {
+		try {
+			return new XStream().fromXML(Utils.read(path));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

@@ -8,7 +8,7 @@
  * 
  * BITCOIN: 1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp
  * 
- * OFFICIAL PROJECT PAGE:https://github.com/kactech/OTj
+ * OFFICIAL PROJECT PAGE: https://github.com/kactech/OTj
  * 
  * -------------------------------------------------------
  * 
@@ -64,6 +64,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -74,7 +75,6 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
@@ -120,7 +120,9 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.kactech.otj.model.BasicOTSignature;
 import com.kactech.otj.model.BasicSigned;
+import com.kactech.otj.model.Signable;
 import com.kactech.otj.model.Signed;
+import com.kactech.otj.model.SigningSupport;
 
 public class Utils {
 	private static final Utils _it = new Utils();
@@ -438,7 +440,7 @@ public class Utils {
 	/*
 	 * seal
 	 */
-	public static byte[] seal(String msg, String nymID, RSAPublicKey nymKey)
+	public static byte[] seal(String msg, String nymID, PublicKey nymKey)
 			throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException,
 			BadPaddingException {
 		SecureRandom random = new SecureRandom();
@@ -450,7 +452,7 @@ public class Utils {
 				, new IvParameterSpec(vector));
 	}
 
-	public static byte[] seal(String msg, String nymID, RSAPublicKey nymKey, SecretKeySpec aesSecret,
+	public static byte[] seal(String msg, String nymID, PublicKey nymKey, SecretKeySpec aesSecret,
 			IvParameterSpec vector)
 			throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException,
 			BadPaddingException {
@@ -488,7 +490,7 @@ public class Utils {
 		return base64Encode(pack(buff), true);
 	}
 
-	public static String open(byte[] encryptedEnvelope, RSAPrivateKey privateKey) throws InvalidKeyException,
+	public static String open(byte[] encryptedEnvelope, PrivateKey privateKey) throws InvalidKeyException,
 			NoSuchAlgorithmException, InvalidAlgorithmParameterException, IllegalBlockSizeException,
 			BadPaddingException {
 		String str;
@@ -540,7 +542,7 @@ public class Utils {
 	}
 
 	/*
-	 * got it, dizzy code
+	 * got it, dizzy code, it's real nymIDSource(when escaped) and publicInfo (if not escaped)
 	 */
 	public static String toPemPackedEncodedArmored(PublicKey publicKey, boolean escaped) {
 		StringWriter sw = new StringWriter();
@@ -618,6 +620,48 @@ public class Utils {
 				.append("-----END MESSAGE SIGNATURE-----\n");
 
 		return signed.toString();
+	}
+
+	public static Signable sign(Signable signable, PrivateKey privateKey) throws InvalidKeyException,
+			SignatureException {
+		byte[] samyHash = Utils.samyHash(signable.getUnsigned().getBytes(Utils.UTF8));
+		OTPssSignature signature = new OTPssSignature();
+		signature.initSign(privateKey);
+		signature.update(samyHash);
+		byte[] sign = signature.sign();
+		sign = pack(ByteBuffer.wrap(sign));
+		String signString = Utils.base64EncodeString(sign, true);
+		BasicOTSignature otSig = new BasicOTSignature();
+		otSig.setValue(signString);
+		otSig.setVersion("kactech 0.2");
+		signable.addSignature(otSig);
+
+		StringBuilder signed = new StringBuilder();
+		signed.append("-----BEGIN SIGNED MESSAGE-----\n")
+				.append("Hash: SAMY\n\n")
+				.append(signable.getUnsigned())
+				.append("-----BEGIN MESSAGE SIGNATURE-----\n")
+				.append("Version: ").append(otSig.getVersion() + "\n\n")
+				.append(otSig.getValue())
+				.append("-----END MESSAGE SIGNATURE-----\n");
+		signable.setSigned(signed.toString());
+		return signable;
+	}
+
+	public static SigningSupport sign(SigningSupport signable, PrivateKey privateKey) throws InvalidKeyException,
+			SignatureException {
+		byte[] samyHash = Utils.samyHash(signable.getUnsigned().getBytes(Utils.UTF8));
+		OTPssSignature signature = new OTPssSignature();
+		signature.initSign(privateKey);
+		signature.update(samyHash);
+		byte[] sign = signature.sign();
+		sign = pack(ByteBuffer.wrap(sign));
+		String signString = Utils.base64EncodeString(sign, true);
+		BasicOTSignature otSig = new BasicOTSignature();
+		otSig.setValue(signString);
+		otSig.setVersion("kactech 0.2");
+		signable.addSignature(otSig, "SAMY");
+		return signable;
 	}
 
 	public static boolean verify(String unsigned, PublicKey publicKey, String signature) throws PackerException,
@@ -741,6 +785,10 @@ public class Utils {
 
 	public static byte[] readBytes(Path path) throws IOException {
 		return Files.readAllBytes(path);
+	}
+
+	public static String read(String first, String... restOfPath) throws IOException {
+		return read(Paths.get(first, restOfPath));
 	}
 
 	public static String read(File file) throws IOException {

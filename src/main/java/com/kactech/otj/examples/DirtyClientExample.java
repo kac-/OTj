@@ -8,7 +8,7 @@
  * 
  * BITCOIN: 1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp
  * 
- * OFFICIAL PROJECT PAGE:https://github.com/kactech/OTj
+ * OFFICIAL PROJECT PAGE: https://github.com/kactech/OTj
  * 
  * -------------------------------------------------------
  * 
@@ -48,10 +48,8 @@
  * PURPOSE. See the GNU Affero General Public License for
  * more details.
  ******************************************************************************/
-
 package com.kactech.otj.examples;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
@@ -66,37 +64,32 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.kactech.otj.Client;
-import com.kactech.otj.JeromqTranport;
-import com.kactech.otj.Messages;
+import com.kactech.otj.JeromqTransport;
+import com.kactech.otj.MSG;
+import com.kactech.otj.OT;
 import com.kactech.otj.Utils;
-import com.kactech.otj.model.Account;
-import com.kactech.otj.model.BasicAccount;
-import com.thoughtworks.xstream.XStream;
+import com.kactech.otj.model.UserAccount;
+import com.kactech.otj.model.BasicUserAccount;
 
 public class DirtyClientExample {
 	static {
 		Security.addProvider(new BouncyCastleProvider());
 	}
-	private static final Path dirtyExampleAccountPath = Paths.get("testData", "acc", "dirtyExample.xml");
-	private static Account testAccount;
+	private static final Path dirtyExampleAccountPath = Paths.get("testData", "acc", "dirtyExample.ser");
+	private static UserAccount testAccount;
 
-	public static Account getAccount() {
+	public static UserAccount getAccount() {
 		synchronized (dirtyExampleAccountPath) {
 			if (testAccount == null) {
-				Account acc = null;
+				UserAccount acc = null;
 				try {
-					acc = (Account) new XStream().fromXML(Utils.read(dirtyExampleAccountPath));
+					acc = (UserAccount) ExamplesUtils.deserializeJava(dirtyExampleAccountPath);
 				} catch (Exception e) {
 				}
 				if (acc == null) {
-					BasicAccount bacc = new BasicAccount();
+					BasicUserAccount bacc = new BasicUserAccount();
 					bacc.generate();
-					try {
-						Utils.writeDirs(dirtyExampleAccountPath, new XStream().toXML(bacc));
-					} catch (IOException e) {
-						//throw it as runtime because... it's runtime for test example
-						throw new RuntimeException(e);
-					}
+					ExamplesUtils.serializeJava(dirtyExampleAccountPath, bacc);
 					acc = bacc;
 				}
 				testAccount = acc;
@@ -114,7 +107,9 @@ public class DirtyClientExample {
 		String serverID = "tBy5mL14qSQXCJK7Uz3WlTOKRP9M0JZksA3Eg7EnnQ1";
 		String serverEndpoint = "tcp://localhost:7085";
 
-		Client client = new Client(getAccount(), serverID, serverPublicKey, new JeromqTranport(
+		UserAccount account = getAccount();
+		System.out.println("client nymID: " + getAccount().getNymID());
+		Client client = new Client(account, serverID, serverPublicKey, new JeromqTransport(
 				serverEndpoint));
 		return client;
 	}
@@ -125,7 +120,7 @@ public class DirtyClientExample {
 		String recipientNymID = "SP8rPHc6GMRPL517UL5J8RK2yOiToyVqMaj3PUHvLzM";
 		String message = "Subject: hello from Java\ngood morning!";
 		try {
-			int reqNum;
+			Long reqNum;
 			/*
 			 * try get request number
 			 * if it throws exception the account isn't registered on the server
@@ -139,24 +134,22 @@ public class DirtyClientExample {
 				reqNum = client.getRequest();
 			}
 
-			Messages.CheckUser cu = client.checkUser(recipientNymID, reqNum);
+			MSG.CheckUserResp cu = client.checkUser(recipientNymID);
 			// if user has credentials take his nymIDSource, for public key
 			RSAPublicKey recipientPublicKey;
-			if (cu.getContent().hasCredentials()) {
-				Messages.OTuser credentialList = Messages.parseResponse(cu.getContent().getCredentialList()
-						.getUncompressed(),
-						Messages.OTuser.class);
+			if (cu.getHasCredentials()) {
+				OT.Pseudonym credentialList = cu.getCredentialList().getEntity();
 				String nymIDSource = credentialList.getNymIDSource().getRaw();
 				recipientPublicKey = (RSAPublicKey) Utils.fromIDSource(nymIDSource);
 			} else {
-				String str = Utils.unarmor(cu.getContent().getNymPublicKey(), true);
+				String str = Utils.unarmor(cu.getNymPublicKey(), true);
 				byte[] packed = Utils.base64Decode(str);
 				str = Utils.unpack(packed, String.class);
 				recipientPublicKey = Utils.pemReadRSAPublicKey(str);
 			}
-			Messages.SendUserMessage msg = client.sendUserMessage(message,
-					recipientNymID, recipientPublicKey, null);
-			System.out.println("message sent: " + msg.getContent().isSuccess());
+			MSG.SendUserMessageResp msg = client.sendUserMessage(message,
+					recipientNymID, recipientPublicKey);
+			System.out.println("message sent: " + msg.getSuccess());
 
 		} finally {
 			client.close();// close, else thread may hang

@@ -48,75 +48,29 @@
  * PURPOSE. See the GNU Affero General Public License for
  * more details.
  ******************************************************************************/
-package com.kactech.otj.tools.gui;
+package com.kactech.otj;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
-
-import com.kactech.otj.tools.DeepDecoder;
-
-/**
- * GUI for {@link com.kactech.otj.tools.DeepDecoder}
- * 
- * @author Piotr Kopeć (kactech)
- * 
+/*
+ * just higher level tool for ASCIIArmor strings
  */
-@SuppressWarnings("serial")
-public class DeepDecoderGUI extends JPanel implements ActionListener {
-	JTextArea text = new JTextArea();
-	JButton decode = new JButton("decode");
-
-	public DeepDecoderGUI() {
-		super(new BorderLayout());
-		decode.addActionListener(this);
-		text.setEditable(true);
-		add(decode, BorderLayout.NORTH);
-		add(new JScrollPane(text), BorderLayout.CENTER);
+public class AsciiA {
+	public static String setString(String str) {
+		return setString(str, true);
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		String str = text.getText();
+	public static String setString(String str, boolean linebreaks) {
+		byte[] by = Utils.pack(str);
+		by = Utils.zlibCompress(by);
+		return Utils.base64EncodeString(by, linebreaks);
+	}
 
+	public static String getString(String str) {
+		byte[] by = Utils.base64Decode(str.trim());
 		try {
-			StringWriter w = new StringWriter();
-			DeepDecoder dd = new DeepDecoder(new PrintWriter(w), "   ");
-			dd.process(str);
-			dd.flush();
-			dd.close();
-			str = w.getBuffer().toString();
-			text.setText(str);
-		} catch (Exception e1) {
-			e1.printStackTrace();
+			by = Utils.zlibDecompress(by);
+			return Utils.unpack(by, String.class);
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
 		}
-	}
-
-	static void createAndShowGUI() {
-		JFrame f = new JFrame();
-		DeepDecoderGUI dd = new DeepDecoderGUI();
-		f.getContentPane().add(dd);
-		f.setSize(800, 600);
-		f.setVisible(true);
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
-
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				createAndShowGUI();
-			}
-		});
 	}
 }

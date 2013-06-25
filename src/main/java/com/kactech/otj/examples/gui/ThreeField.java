@@ -48,75 +48,59 @@
  * PURPOSE. See the GNU Affero General Public License for
  * more details.
  ******************************************************************************/
-package com.kactech.otj.tools.gui;
+package com.kactech.otj.examples.gui;
 
-import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
 
-import com.kactech.otj.tools.DeepDecoder;
+public class ThreeField extends Box implements ActionListener {
+	int len;
+	String value;
 
-/**
- * GUI for {@link com.kactech.otj.tools.DeepDecoder}
- * 
- * @author Piotr Kopeć (kactech)
- * 
- */
-@SuppressWarnings("serial")
-public class DeepDecoderGUI extends JPanel implements ActionListener {
-	JTextArea text = new JTextArea();
-	JButton decode = new JButton("decode");
+	JLabel name = new JLabel();
+	JTextField text = new JTextField();
+	JButton third;
 
-	public DeepDecoderGUI() {
-		super(new BorderLayout());
-		decode.addActionListener(this);
-		text.setEditable(true);
-		add(decode, BorderLayout.NORTH);
-		add(new JScrollPane(text), BorderLayout.CENTER);
+	public ThreeField(int len, String name, JButton third) {
+		super(BoxLayout.LINE_AXIS);
+		this.len = len;
+		this.third = third;
+
+		this.name.setText(name);
+		this.name.setPreferredSize(new Dimension(100, 20));
+		this.text.setText("----");
+		this.third.addActionListener(this);
+		this.len = len;
+		this.text.setColumns(len);
+
+		this.text.setEditable(false);
+
+		setAlignmentX(Component.LEFT_ALIGNMENT);
+		add(this.name);
+		add(this.text);
+		add(this.third);
+		setMaximumSize(getPreferredSize());
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		String str = text.getText();
 
-		try {
-			StringWriter w = new StringWriter();
-			DeepDecoder dd = new DeepDecoder(new PrintWriter(w), "   ");
-			dd.process(str);
-			dd.flush();
-			dd.close();
-			str = w.getBuffer().toString();
-			text.setText(str);
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
 	}
 
-	static void createAndShowGUI() {
-		JFrame f = new JFrame();
-		DeepDecoderGUI dd = new DeepDecoderGUI();
-		f.getContentPane().add(dd);
-		f.setSize(800, 600);
-		f.setVisible(true);
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	public void setText(String text) {
+		this.text.setText(text.substring(0, 4) + "...");
+		this.value = text;
 	}
 
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				createAndShowGUI();
-			}
-		});
+	public String getText() {
+		return this.value;
 	}
 }

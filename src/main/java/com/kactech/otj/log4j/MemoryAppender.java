@@ -48,75 +48,38 @@
  * PURPOSE. See the GNU Affero General Public License for
  * more details.
  ******************************************************************************/
-package com.kactech.otj.tools.gui;
+package com.kactech.otj.log4j;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
+import org.apache.log4j.Level;
+import org.apache.log4j.WriterAppender;
+import org.apache.log4j.spi.LoggingEvent;
 
-import com.kactech.otj.tools.DeepDecoder;
+public class MemoryAppender extends WriterAppender {
+	static PlainDocument doc = new PlainDocument();
 
-/**
- * GUI for {@link com.kactech.otj.tools.DeepDecoder}
- * 
- * @author Piotr Kopeć (kactech)
- * 
- */
-@SuppressWarnings("serial")
-public class DeepDecoderGUI extends JPanel implements ActionListener {
-	JTextArea text = new JTextArea();
-	JButton decode = new JButton("decode");
-
-	public DeepDecoderGUI() {
-		super(new BorderLayout());
-		decode.addActionListener(this);
-		text.setEditable(true);
-		add(decode, BorderLayout.NORTH);
-		add(new JScrollPane(text), BorderLayout.CENTER);
+	public static Document getDoc() {
+		return doc;
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
-		String str = text.getText();
-
+	public void append(LoggingEvent event) {
 		try {
-			StringWriter w = new StringWriter();
-			DeepDecoder dd = new DeepDecoder(new PrintWriter(w), "   ");
-			dd.process(str);
-			dd.flush();
-			dd.close();
-			str = w.getBuffer().toString();
-			text.setText(str);
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-	}
-
-	static void createAndShowGUI() {
-		JFrame f = new JFrame();
-		DeepDecoderGUI dd = new DeepDecoderGUI();
-		f.getContentPane().add(dd);
-		f.setSize(800, 600);
-		f.setVisible(true);
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
-
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				createAndShowGUI();
+			if (event.getMessage() != null) {
+				String msg = event.getLevel().equals(Level.WARN) ? "WARN: "
+						: event.getLevel().equals(Level.ERROR) ? "ERROR: " : "";
+				msg += event.getMessage();
+				if (event.getThrowableStrRep() != null)
+					msg += ", " + event.getThrowableStrRep()[0];
+				msg += '\n';
+				doc.insertString(doc.getLength(), msg, null);
 			}
-		});
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

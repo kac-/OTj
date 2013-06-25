@@ -8,7 +8,7 @@
  * 
  * BITCOIN: 1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp
  * 
- * OFFICIAL PROJECT PAGE:https://github.com/kactech/OTj
+ * OFFICIAL PROJECT PAGE: https://github.com/kactech/OTj
  * 
  * -------------------------------------------------------
  * 
@@ -54,6 +54,7 @@ import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -130,8 +131,7 @@ public class DeepDecoder implements Flushable, Closeable {
 				writer.println(isum + "<!-- TEXT -->\n" + str + "\n" + isum + "<!-- !TEXT -->");
 			return;
 		}
-		if (str.startsWith("<?xml ") || str.startsWith("<keyCredential")
-				|| str.startsWith("<masterCredential") || str.startsWith("<transaction ")) {
+		if (str.trim().startsWith("<")) {//TODO not efficient
 			//str = str.replaceFirst("(<\\?xml .*?\\?>)", "<!-- $1 -->");
 			str = str.replace("<?xml version=\"2.0\"", "<?xml version=\"1.0\"");
 			str = str.replace("<@", "<").replace("</@", "</");
@@ -144,18 +144,27 @@ public class DeepDecoder implements Flushable, Closeable {
 				writer.println(isum + "<!-- TEXT -->\n" + str + "\n" + isum + "<!-- !TEXT -->");
 				return;
 			}
-			List<String> stack = new LinkedList<String>();
-			by = Utils.base64Decode(str);
-			stack.add("BASE64");
-			if (!tryBytes(by, isum, indent, stack))
-				writer.println(isum + "<!-- TEXT -->\n" + str + "\n" + isum + "<!-- !TEXT -->");
+			try {
+				by = Utils.base64Decode(str.trim());
+				by = Utils.zlibDecompress(by);
+				by = Utils.unpack(by, byte[].class);
+				if (!isValidUtf8(by))
+					throw new ParseException("it isn't ASCIIArmored string", 0);
+				writer.println(isum + "<!-- SetString -->");
+				process(new String(by, Utils.UTF8), isum);
+			} catch (Exception ex) {// not SetString
+				List<String> stack = new LinkedList<String>();
+				by = Utils.base64Decode(str);
+				stack.add("BASE64");
+				if (!tryBytes(by, isum, indent, stack))
+					writer.println(isum + "<!-- TEXT -->\n" + str + "\n" + isum + "<!-- !TEXT -->");
+			}
 
 		}
 
 	}
 
 	boolean tryBytes(byte[] by, String isum, String ind, List<String> stack) {
-
 		try {
 			by = Utils.zlibDecompress(by);
 			stack.add("COMPRESS");
@@ -181,11 +190,14 @@ public class DeepDecoder implements Flushable, Closeable {
 
 		}
 		try {
-			String unpacked = Utils.unpack(by, String.class);
-			stack.add("PACK STRING");
-			printStack(stack, isum);
-			process(unpacked, isum);
-			return true;
+			byte[] by2 = Utils.unpack(by, byte[].class);
+			if (isValidUtf8(by2)) {
+				String unpacked = new String(by2, Utils.UTF8);
+				stack.add("PACK STRING");
+				printStack(stack, isum);
+				process(unpacked, isum);
+				return true;
+			}
 		} catch (Exception ex) {
 
 		}
@@ -222,7 +234,7 @@ public class DeepDecoder implements Flushable, Closeable {
 			}
 		}
 		if (!hasElements) {
-			process(el.getTextContent(), is + indent);
+			process(el.getTextContent().trim(), is + indent);
 		}
 		writer.println(is + "</" + el.getTagName() + ">");
 	}
