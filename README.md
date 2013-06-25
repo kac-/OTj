@@ -9,7 +9,7 @@ Low-level client-side library for [Open Transactions](https://github.com/FellowT
 [DirtyClientExample](/src/main/java/com/kactech/otj/examples/DirtyClientExample.java) - quick and dirty simple client implementation, sending user messages here!
 
 [OTjAlpha](/src/main/java/com/kactech/otj/examples/gui/OTjAlpha.java) simple transaction client, creates 'Silver grams' account, register it and let send and receive grams via localhost test server.
-Precompiled 0.89.g-2 jar can be downloaded [here](https://dl.dropboxusercontent.com/u/24177759/my_apps/OTj-app-0.89.g-2.jar).
+Precompiled 0.89.g-3 jar can be downloaded [here](https://dl.dropboxusercontent.com/u/24177759/my_apps/OTj-app-0.89.g-3.jar).
 App usage [here](OTjAlpha.md)
 
 Soon more...
