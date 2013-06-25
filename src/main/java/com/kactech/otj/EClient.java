@@ -493,8 +493,8 @@ public class EClient implements Closeable, ReqNumManager {
 					item.status = OT.Item.Status.request;
 					item.type = OT.Item.Type.acceptTransaction;
 					logger.info("we've got new tx# from server");
-					state.issuedNums.addAll(nr.totalListOfNumbers);
-					state.transactionNums.addAll(nr.totalListOfNumbers);
+					addIfNotThere(state.transactionNums, nr.totalListOfNumbers);
+					addIfNotThere(state.issuedNums, nr.totalListOfNumbers);
 					item.totalListOfNumbers = nr.totalListOfNumbers;
 					Engines.render(item, signingKey);
 					otx.items.add(item);
@@ -504,8 +504,8 @@ public class EClient implements Closeable, ReqNumManager {
 					item.inReferenceTo = nr.transactionNum;
 					item.status = OT.Item.Status.request;
 					item.type = OT.Item.Type.acceptNotice;
-					state.issuedNums.addAll(nr.totalListOfNumbers);
-					state.transactionNums.addAll(nr.totalListOfNumbers);
+					addIfNotThere(state.transactionNums, nr.totalListOfNumbers);
+					addIfNotThere(state.issuedNums, nr.totalListOfNumbers);
 					item.totalListOfNumbers = nr.totalListOfNumbers;
 					Engines.render(item, signingKey);
 					otx.items.add(item);
@@ -602,6 +602,12 @@ public class EClient implements Closeable, ReqNumManager {
 		//RequestTemplates
 		//nym.setVersion(new OT.Version("1.0"));
 		return client.createUserAccountNew(credentialList, credentials);
+	}
+
+	static void addIfNotThere(List<Long> list, List<Long> toAdd) {
+		for (Long l : toAdd)
+			if (!list.contains(l))
+				list.add(l);
 	}
 
 	private void removeTransactioNum(Long num) {
