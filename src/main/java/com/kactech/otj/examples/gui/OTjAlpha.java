@@ -249,11 +249,12 @@ public class OTjAlpha extends JPanel implements ActionListener {
 			Long amount = Long.parseLong(this.amount.getText().trim());
 			String str = sendTO.getText().trim();
 			byte[] bytes = null;
-			try {
-				bytes = Utils.base62Decode(str).toByteArray();
-			} catch (Exception e) {
-			}
-			if (bytes == null || bytes.length != 32)
+			if (!str.isEmpty())
+				try {
+					bytes = Utils.base62Decode(str).toByteArray();
+				} catch (Exception e) {
+				}
+			if (bytes == null)
 				logger.error("incorrect recipient accountID");
 			else {
 				client.notarizeTransaction(str, amount);
