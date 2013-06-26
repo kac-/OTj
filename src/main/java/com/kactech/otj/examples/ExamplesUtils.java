@@ -53,11 +53,15 @@ package com.kactech.otj.examples;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
+import com.google.gson.reflect.TypeToken;
+import com.kactech.otj.Engines;
 import com.kactech.otj.Utils;
 import com.thoughtworks.xstream.XStream;
 
@@ -102,5 +106,16 @@ public class ExamplesUtils {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private static List<SampleAccount> sampleAccounts;
+
+	public static List<SampleAccount> getSampleAccounts() {
+		if (sampleAccounts == null)
+			sampleAccounts = Engines.gson.fromJson(new InputStreamReader(Engines.class
+					.getResourceAsStream("/com/kactech/otj/examples/sample-accounts.json")),
+					new TypeToken<List<SampleAccount>>() {
+					}.getType());
+		return sampleAccounts;
 	}
 }

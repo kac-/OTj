@@ -50,22 +50,4 @@
 #   more details.
 #############################################################
 
-DIR=$(readlink -f $0)
-DIR=$(dirname $DIR)
-cd $DIR/..
-JAVA=java
-#JAVA=/opt/java/jre1.6.0_26-i586/bin/java
-#JAVA=/usr/lib/jvm/jre-1.7.0-openjdk.x86_64/bin/java
-CPF=mvn.classpath
-if [ ! -e $CPF ] ; then
-	mvn compile dependency:build-classpath -Dmdep.outputFile=$CPF
-	if [ $? -eq 0 ] ; then
-		echo "building classpath complete"
-	else
-		echo "ERROR cannot build classpath"
-		return -1
-	fi
-fi
-BCP=`cat $CPF`
-CP=target/test-classes:target/classes:$BCP
-$JAVA -cp $CP "$@"
+$(dirname $(readlink -f $0))/pomrunner.sh com.kactech.otj.examples.App_otj "$@ "

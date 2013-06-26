@@ -8,7 +8,7 @@
  * 
  * BITCOIN: 1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp
  * 
- * OFFICIAL PROJECT PAGE:https://github.com/kactech/OTj
+ * OFFICIAL PROJECT PAGE: https://github.com/kactech/OTj
  * 
  * -------------------------------------------------------
  * 
@@ -48,99 +48,20 @@
  * PURPOSE. See the GNU Affero General Public License for
  * more details.
  ******************************************************************************/
+package com.kactech.otj.examples;
 
-createUserAccount(requestNum, nymID, serverID, credentialList, credentials) ::= <<
-<?xml version="1.0" ?>
+public class SampleAccount {
+	public String accountID;
+	public String accountName;
+	public String assetName;
+	public String assetID;
+	public String nymName;
+	public String nymID;
 
-<OTmessage
- version="2.0">
+	@Override
+	public String toString() {
+		return "SampleAccount [accountID=" + accountID + ", accountName=" + accountName + ", assetName=" + assetName
+				+ ", assetID=" + assetID + ", nymName=" + nymName + ", nymID=" + nymID + "]";
+	}
 
-   <createUserAccount
-    requestNum="$requestNum$"
-    nymID="$nymID$"
-    serverID="$serverID$">
-
-      <credentialList>
-$credentialList$</credentialList>
-
-      <credentials>
-$credentials$</credentials>
-
-   </createUserAccount>
-
-</OTmessage>
-
->>
-
-credentialList(nymID, nymIDSource, masterCredentialID, keyCredentialID) ::= <<
-	<?xml version="2.0"?>
-
-	<OTuser version="1.0"
-	 nymID="$nymID$">
-
-		<nymIDSource>
-			$nymIDSource$</nymIDSource>
-
-		<masterCredential
-		 ID="$masterCredentialID$"
-		 valid="true"/>
-
-		<keyCredential
-		 ID="$keyCredentialID$"
-		 masterID="$masterCredentialID$"
-		 valid="true"/>
-
-	</OTuser>
-
->>
-
-
-
-
-keyCredentialSigned(nymID,masterCredentialID, nymIDSource, masterSigned ) ::= <<
-	<keyCredential nymID="$nymID$"
-	 masterCredentialID="$masterCredentialID$" >
-
-		<nymIDSource>
-			$nymIDSource$</nymIDSource>
-
-		<masterSigned>
-			$masterSigned$</masterSigned>
-
-	</keyCredential>
-
->>
-
-keyCredential(nymID, masterCredentialID, nymIDSource, masterPublic, keys) ::= <<
-	<keyCredential nymID="$nymID$"
-	 masterCredentialID="$masterCredentialID$">
-		<nymIDSource>
-			$nymIDSource$</nymIDSource>
-		
-		<masterPublic>
-			$masterPublic$</masterPublic>
-	
-		<publicContents count="$length(keys)$">
-			$keys.keys:{k| $publicInfo(k, keys.(k))$ };separator="\n"$
-		</publicContents>
-	</keyCredential>
-
->>
-
-masterCredential(nymID, nymIDSource, keys) ::= <<
-	<masterCredential nymID="$nymID$" >
-
-		<nymIDSource>
-			$nymIDSource$</nymIDSource>
-
-		<publicContents count="$length(keys)$">
-			$keys.keys:{k| $publicInfo(k, keys.(k))$ };separator="\n"$
-		</publicContents>
-	</masterCredential>
-
->>
-
-publicInfo(key,value) ::= <<
-	<publicInfo key="$key$">
-		$value$</publicInfo>
->>
+}

@@ -297,7 +297,7 @@ public class OTjAlpha extends JPanel implements ActionListener {
 		});
 	}
 
-	static EClient buildClient() {
+	public static BasicConnectionInfo localhostServerInfo() {
 		try {
 			String serverKeyString = "{\"modulus\":157308124954637849769808055227589301287752744825558530150220825924565496309952110169467763525063683140481597445838436176231389850954363355832747286996253525968666484844394188835285816520152462516072618852511394863800122669965310355610221431146947161206966593783544166481213230593202598098997296223206388439283,\"publicExponent\":65537}";
 			PublicKey serverPublicKey = KeyFactory.getInstance("RSA").generatePublic(
@@ -305,12 +305,15 @@ public class OTjAlpha extends JPanel implements ActionListener {
 			String serverID = "tBy5mL14qSQXCJK7Uz3WlTOKRP9M0JZksA3Eg7EnnQ1";
 			String serverEndpoint = "tcp://localhost:7085";
 
-			ConnectionInfo connInfo = new BasicConnectionInfo(serverID, serverPublicKey, serverEndpoint);
-			EClient client = new EClient(Paths.get("client"), connInfo);
-			client.setAssetType("CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA");//silver grams
-			return client;
+			return new BasicConnectionInfo(serverID, serverPublicKey, serverEndpoint);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static EClient buildClient() {
+		EClient client = new EClient(Paths.get("client"), localhostServerInfo());
+		client.setAssetType("CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA");//silver grams
+		return client;
 	}
 }

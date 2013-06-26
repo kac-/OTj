@@ -54,7 +54,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.RSAPrivateKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
@@ -374,6 +383,45 @@ public class Engines {
 					out.nullValue();
 				else
 					out.value(value.getValue());
+			}
+		});
+		// keypairs!!! 
+		builder.registerTypeAdapter(KeyPair.class, new TypeAdapter<KeyPair>() {
+			@Override
+			public KeyPair read(JsonReader in) throws IOException {
+				in.beginObject();
+				BigInteger mod = null, privExp = null, pubExp = null;
+				for (int i = 0; i < 3; i++) {
+					String name = in.nextName();
+					if ("modulus".equals(name))
+						mod = new BigInteger(in.nextString());
+					else if ("privateExponent".equals(name))
+						privExp = new BigInteger(in.nextString());
+					else if ("publicExponent".equals(name))
+						pubExp = new BigInteger(in.nextString());
+				}
+				in.endObject();
+				try {
+					KeyFactory kf = KeyFactory.getInstance("RSA");
+					return new KeyPair(kf.generatePublic(new RSAPublicKeySpec(mod, pubExp))
+							, kf.generatePrivate(new RSAPrivateKeySpec(mod, privExp)));
+				} catch (InvalidKeySpecException e) {
+					throw new RuntimeException(e);
+				} catch (NoSuchAlgorithmException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			@Override
+			public void write(JsonWriter out, KeyPair value) throws IOException {
+				out.beginObject();
+				out.name("modulus");
+				out.value(((RSAPrivateKey) value.getPrivate()).getModulus());
+				out.name("privateExponent");
+				out.value(((RSAPrivateKey) value.getPrivate()).getPrivateExponent());
+				out.name("publicExponent");
+				out.value(((RSAPublicKey) value.getPublic()).getPublicExponent());
+				out.endObject();
 			}
 		});
 

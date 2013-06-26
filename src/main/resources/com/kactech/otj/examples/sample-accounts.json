@@ -1,0 +1,50 @@
+[
+  {
+    "assetName": "game tokens",
+    "accountID": "82TJYj4BXBkxQFBgqirHTmht75GOhQUNur6iLCwjcpq",
+    "accountName": "Game Tokens ISSUER",
+    "nymName": "FT\u0027s Test Nym",
+    "assetID": "ttHGviJ9hRcijEvWT4f9KpqVcZ7c0UqXYNslvSEa6gJ",
+    "nymID": "T1Q3wZWgeTUoaUvn9m1lzIK5tn5wITlzxzrGNI8qtaV"
+  },
+  {
+    "assetName": "silver grams",
+    "accountID": "FSityKmvnd0nb4Ad1bpDBukqW0ExzKd4pbDOwXtqvEC",
+    "accountName": "Silver ISSUER",
+    "nymName": "FT\u0027s Test Nym",
+    "assetID": "CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA",
+    "nymID": "T1Q3wZWgeTUoaUvn9m1lzIK5tn5wITlzxzrGNI8qtaV"
+  },
+  {
+    "assetName": "silver grams",
+    "accountID": "JDc49nn6SgCeiBtkr0DwCdkaYVUXd0ShSMSrjlnnOhx",
+    "accountName": "Bob\u0027s Silver",
+    "nymName": "Trader Bob",
+    "assetID": "CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA",
+    "nymID": "SP8rPHc6GMRPL517UL5J8RK2yOiToyVqMaj3PUHvLzM"
+  },
+  {
+    "assetName": "silver grams",
+    "accountID": "eMldMMiKfJRO8B8yJjzcezs9xvSt7dkdlWt50e8CDxn",
+    "accountName": "FT\u0027s Silver",
+    "nymName": "FT\u0027s Test Nym",
+    "assetID": "CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA",
+    "nymID": "T1Q3wZWgeTUoaUvn9m1lzIK5tn5wITlzxzrGNI8qtaV"
+  },
+  {
+    "assetName": "game tokens",
+    "accountID": "foGJvz22NEVmscagf7wUehPlF2gx13Z5dG7B47M87SU",
+    "accountName": "FT\u0027s Tokens",
+    "nymName": "FT\u0027s Test Nym",
+    "assetID": "ttHGviJ9hRcijEvWT4f9KpqVcZ7c0UqXYNslvSEa6gJ",
+    "nymID": "T1Q3wZWgeTUoaUvn9m1lzIK5tn5wITlzxzrGNI8qtaV"
+  },
+  {
+    "assetName": "Rands",
+    "accountID": "hQMfMTAQUUp1mqIRFMDkxnAWZErcPaoBoEgObogDyRu",
+    "accountName": "FT\u0027s Rands",
+    "nymName": "FT\u0027s Test Nym",
+    "assetID": "aF4n89o4zyuVWR6Cpm9X75u2Vgv1hbT2v4S0jMKApRR",
+    "nymID": "T1Q3wZWgeTUoaUvn9m1lzIK5tn5wITlzxzrGNI8qtaV"
+  }
+]
