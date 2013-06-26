@@ -76,8 +76,8 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 public class EClient implements Closeable, ReqNumManager {
 	static final Logger logger = LoggerFactory.getLogger(EClient.class);
-	static final String userAccountFile = "userAccount.xml";
-	static final String stateFile = "state.xml";
+	static final String userAccountFile = "userAccount.json";
+	static final String stateFile = "state.json";
 
 	@XStreamAlias("EClientState")
 	public static class State {
@@ -90,6 +90,7 @@ public class EClient implements Closeable, ReqNumManager {
 	Path dir;
 	ConnectionInfo connInfo;
 	String assetType;
+	boolean createNewAccount;
 
 	Long reqNum;
 	State state;
@@ -109,7 +110,7 @@ public class EClient implements Closeable, ReqNumManager {
 		// user account
 		UserAccount uacc = null;
 		try {
-			uacc = (UserAccount) Engines.xstream.fromXML(Utils.read(dir.resolve(userAccountFile)));
+			uacc = Engines.gson.fromJson(Utils.read(dir.resolve(userAccountFile)), BasicUserAccount.class);
 			logger.info("local user account loaded");
 		} catch (Exception e) {
 			logger.warn(e.getMessage());
@@ -118,7 +119,7 @@ public class EClient implements Closeable, ReqNumManager {
 			logger.info("creating local user account");
 			uacc = new BasicUserAccount().generate();
 			try {
-				Utils.writeDirs(dir.resolve(userAccountFile), Engines.xstream.toXML(uacc));
+				Utils.writeDirs(dir.resolve(userAccountFile), Engines.gson.toJson(uacc));
 			} catch (IOException e) {
 				logger.error("saving " + userAccountFile + " file", e);
 				throw new RuntimeException(e);
@@ -127,7 +128,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 		// state
 		try {
-			state = (State) Engines.xstream.fromXML(Utils.read(dir.resolve(stateFile)));
+			state = Engines.gson.fromJson(Utils.read(dir.resolve(stateFile)), State.class);
 			logger.info("state loaded");
 		} catch (Exception e) {
 			logger.warn(e.getMessage());
@@ -135,7 +136,6 @@ public class EClient implements Closeable, ReqNumManager {
 		if (state == null) {
 			logger.info("creating new state");
 			state = new State();
-			state.assetType = assetType;
 			/*
 			state.transactionNums = new OT.NumList(connInfo.getID());
 			state.issuedNums = new OT.NumList(connInfo.getID());
@@ -149,23 +149,27 @@ public class EClient implements Closeable, ReqNumManager {
 				connInfo.getEndpoint()));
 		client.setReqNumManager(this);
 
-		// if accountID is null than create one
-		if (state.accountID == null) {
+		// if accountID is null or asset different than saved than create new one
+		if (state.accountID == null || (assetType != null && !state.assetType.equals(assetType)) || createNewAccount) {
 			if (assetType == null) {
 				String msg = "I want to create asset account but assetType not set";
 				logger.error(msg);
 				throw new IllegalStateException(msg);
 			}
+			if (state.accountID != null)
+				logger.warn("assetType differs from current state asset");
 			logger.info("creating asset account");
-			MSG.CreateAccountResp resp = client.createAccount(state.assetType);
+			MSG.CreateAccountResp resp = client.createAccount(assetType);
 			if (!resp.getSuccess()) {
 				String msg = "cannot create asset account";
 				logger.error(msg);
 				throw new IllegalStateException(msg);
 			}
 			state.accountID = resp.getAccountID();
+			state.assetType = resp.getNewAccount().getAssetTypeID();
 		}
-		logger.info("init done\nnymID: {}\naccountID: {}", client.getAccount().getNymID(), state.accountID);
+		logger.info("init done\nnymID: {}\naccountID: {}\nassetID: {}", client.getAccount().getNymID(),
+				state.accountID, state.assetType);
 	}
 
 	public Client getClient() {
@@ -174,7 +178,8 @@ public class EClient implements Closeable, ReqNumManager {
 
 	@Override
 	public void close() throws IOException {
-		client.close();
+		if (client != null)
+			client.close();
 	}
 
 	@Override
@@ -184,7 +189,7 @@ public class EClient implements Closeable, ReqNumManager {
 		try {
 			reqNum = client.getRequestRaw();
 		} catch (Client.NotInEnvelopeException e) {
-			logger.warn("probably have no user account at that server- will register from local data");
+			logger.warn("probably have no user account at that server: register from local data");
 			if (!_createUserAccount().getSuccess())
 				throw new IllegalStateException("cannot create user account");
 			reqNum = client.getRequestRaw();
@@ -194,7 +199,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 	public void saveState() {
 		try {
-			Utils.writeDirs(dir.resolve(stateFile), Engines.xstream.toXML(state));
+			Utils.writeDirs(dir.resolve(stateFile), Engines.gson.toJson(state));
 			logger.info("state saved");
 		} catch (IOException e) {
 			logger.error("saving state", e);
@@ -331,6 +336,7 @@ public class EClient implements Closeable, ReqNumManager {
 				switch (rec.getType()) {
 				case pending:
 					balanceAmount += rec.getDisplayValue();
+					logger.info("got pending {}", rec.getDisplayValue());
 					// create accept item
 					item = from(ptx);
 					item.setAmount(rec.getDisplayValue());
@@ -727,5 +733,9 @@ public class EClient implements Closeable, ReqNumManager {
 
 	public OT.Account getCachedAccount() {
 		return cachedAccount;
+	}
+
+	public void setCreateNewAccount(boolean createNewAccount) {
+		this.createNewAccount = createNewAccount;
 	}
 }
