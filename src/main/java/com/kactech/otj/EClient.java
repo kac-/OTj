@@ -78,6 +78,7 @@ public class EClient implements Closeable, ReqNumManager {
 	static final Logger logger = LoggerFactory.getLogger(EClient.class);
 	static final String userAccountFile = "userAccount.json";
 	static final String stateFile = "state.json";
+	static final String accountIDFile = "account.id";
 
 	@XStreamAlias("EClientState")
 	public static class State {
@@ -98,6 +99,7 @@ public class EClient implements Closeable, ReqNumManager {
 	Client client;
 
 	OT.Account cachedAccount;
+	MSG.GetNymboxResp cachedNymbox;
 
 	public EClient(Path dir, ConnectionInfo connInfo) {
 		super();
@@ -170,6 +172,11 @@ public class EClient implements Closeable, ReqNumManager {
 		}
 		logger.info("init done\nnymID: {}\naccountID: {}\nassetID: {}", client.getAccount().getNymID(),
 				state.accountID, state.assetType);
+		try {
+			Utils.writeDirs(dir.resolve(accountIDFile), state.accountID);
+		} catch (IOException e) {
+			logger.warn("storing account.id: " + e.toString());
+		}
 	}
 
 	public Client getClient() {
@@ -211,7 +218,7 @@ public class EClient implements Closeable, ReqNumManager {
 		ensureTransNums();
 		processInbox();
 		OT.Ledger outboxLedger = client.getOutbox(state.accountID).getOutboxLedger();
-		String nymboxHash = client.getNymbox().getNymboxHash();
+		String nymboxHash = cachedNymbox.getNymboxHash();
 		OT.Account account = client.getAccount(state.accountID).getAssetAccount();
 		logger.info("balance: {}", account.getBalance().getAmount());
 		notarizeTransaction(sendTo, amount, account, outboxLedger, nymboxHash);
@@ -279,7 +286,9 @@ public class EClient implements Closeable, ReqNumManager {
 	}
 
 	public void reloadState() {
+		logger.info("before {}", Engines.gson.toJson(makeNums()));
 		takeNumsFrom(_createUserAccount().getNymfile().getEntity());
+		logger.info("after {}", Engines.gson.toJson(makeNums()));
 	}
 
 	public OT.Account getAccount() {
@@ -287,6 +296,7 @@ public class EClient implements Closeable, ReqNumManager {
 	}
 
 	public void processInbox() throws Exception {
+		logger.info("processInbox()");
 		ensureTransNums();
 		MSG.GetInboxResp inbox = client.getInbox(state.accountID);
 		OT.Ledger inboxLedger = inbox.getInboxLedger();
@@ -299,10 +309,11 @@ public class EClient implements Closeable, ReqNumManager {
 	}
 
 	private void processInbox(OT.Ledger inboxLedger, OT.Account assetAcount, OT.Ledger outboxLedger) throws Exception {
+		logger.info("processInbox(<args>)");
 		if (inboxLedger.getInboxRecords() != null) {
 			List<OT.TransactionReport> reports = makeOutboxReports(outboxLedger);
 			// getNymbox for nymboxHash
-			String nymboxHash = client.getNymbox().getNymboxHash();
+			String nymboxHash = cachedNymbox.getNymboxHash();
 			long balanceAmount = assetAcount.getBalance().getAmount();
 			PrivateKey signingKey = client.getAccount().getCpairs().get("S").getPrivate();
 			OT.Pseudonym nums = makeNums();
@@ -417,20 +428,30 @@ public class EClient implements Closeable, ReqNumManager {
 	}
 
 	public void ensureTransNums() {
+		processNymbox();
 		if (state.transactionNums.size() < 30) {
-			if (!client.getTransactionNum(client.getNymbox().getNymboxHash()).getSuccess()) {
-				logger.error("couldn't get new transaction nums");
+			logger.info("sending request for new trans#");
+			if (!client.getTransactionNum(cachedNymbox.getNymboxHash()).getSuccess()) {
+				logger.error("couldn't get new trans#");
 				throw new IllegalStateException("why?");
 			}
-			processNymbox();
+			processNymbox();// accept blank
+			processNymbox();// accept successNotice
 		}
 	}
 
+	public MSG.GetNymboxResp getNymbox() {
+		logger.info("getNymbox()");
+		return cachedNymbox = client.getNymbox();
+	}
+
 	public void processNymbox() {
-		MSG.GetNymboxResp getNymbox = client.getNymbox();
-		for (OT.BoxRecord rec : getNymbox.getNymboxLedger().getNymboxRecords())
+		logger.info("processNymbox()");
+		getNymbox();
+		for (OT.BoxRecord rec : cachedNymbox.getNymboxLedger().getNymboxRecords())
 			if (rec.getType() == OT.Transaction.Type.message) {
-				GetBoxReceiptResp receipt = client.getBoxReceipt(getNymbox.getNymID(), getNymbox.getNymboxLedger()
+				GetBoxReceiptResp receipt = client.getBoxReceipt(cachedNymbox.getNymID(), cachedNymbox
+						.getNymboxLedger()
 						.getType(), rec.getTransactionNum());
 				OT.Transaction box = receipt.getBoxReceipt();
 				MSG.SendUserMessage send = ((MSG.Message) box.getInReferenceToContent()).getSendUserMessage();
@@ -443,15 +464,14 @@ public class EClient implements Closeable, ReqNumManager {
 					e.printStackTrace();
 				}
 			}
-		if (getNymbox.getNymboxLedger().getNymboxRecords().size() > 1)
-			processNymbox(getNymbox);
+		if (cachedNymbox.getNymboxLedger().getNymboxRecords().size() > 1)
+			processCachedNymbox();
 	}
 
-	private void processNymbox(MSG.GetNymboxResp nymbox) {
-		if (nymbox == null)
-			nymbox = client.getNymbox();
+	private void processCachedNymbox() {
+		logger.info("processCachedNymbox()");
 
-		OT.Ledger nymled = nymbox.getNymboxLedger();
+		OT.Ledger nymled = cachedNymbox.getNymboxLedger();
 		PrivateKey signingKey = client.getAccount().getCpairs().get("S").getPrivate();
 		OT.Ledger otled = new OT.Ledger();
 
@@ -510,6 +530,7 @@ public class EClient implements Closeable, ReqNumManager {
 					item.inReferenceTo = nr.transactionNum;
 					item.status = OT.Item.Status.request;
 					item.type = OT.Item.Type.acceptNotice;
+					logger.info("we've got new tx# from server");
 					addIfNotThere(state.transactionNums, nr.totalListOfNumbers);
 					addIfNotThere(state.issuedNums, nr.totalListOfNumbers);
 					item.totalListOfNumbers = nr.totalListOfNumbers;
@@ -537,8 +558,9 @@ public class EClient implements Closeable, ReqNumManager {
 		otled.transactions.add(otx);
 		Engines.render(otled, signingKey);
 
-		MSG.ProcessNymboxResp resp = client.processNymbox(otled, nymbox.getNymboxHash());
+		MSG.ProcessNymboxResp resp = client.processNymbox(otled, cachedNymbox.getNymboxHash());
 		logger.info("process nymbox success: {}", resp.getSuccess());
+		cachedNymbox = client.getNymbox();
 	}
 
 	private MSG.CreateUserAccountResp _createUserAccount() {

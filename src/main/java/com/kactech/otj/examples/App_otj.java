@@ -66,6 +66,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import com.kactech.otj.Client;
 import com.kactech.otj.EClient;
 import com.kactech.otj.Utils;
 import com.kactech.otj.examples.gui.OTjAlpha;
@@ -232,6 +233,7 @@ public class App_otj {
 
 		try {
 			Security.addProvider(new BouncyCastleProvider());
+			Client.DEBUG_JSON = true;
 			client.init();
 
 			if ("balance".equals(command))
@@ -261,7 +263,10 @@ public class App_otj {
 						}
 					}
 				}
-			}
+			} else if ("reload".equals(command))
+				client.reloadState();
+			else if ("procnym".equals(command))
+				client.processNymbox();
 		} finally {
 			client.saveState();
 			client.close();
