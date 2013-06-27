@@ -12,6 +12,8 @@ Low-level client-side library for [Open Transactions](https://github.com/FellowT
 Precompiled 0.89.g-3 jar can be downloaded [here](https://dl.dropboxusercontent.com/u/24177759/my_apps/OTj-app-0.89.g-3.jar).
 App usage [here](OTjAlpha.md)
 
+[otj app](otj.md) transfer tool with command-line syntax compatible to [opentxs](https://github.com/FellowTraveler/Open-Transactions/wiki/opentxs)
+
 Soon more...
 
 --
