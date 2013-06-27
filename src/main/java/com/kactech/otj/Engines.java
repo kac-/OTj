@@ -73,9 +73,6 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-import com.kactech.otj.MSG.AsciiEntity;
-import com.kactech.otj.OT.ArmoredString;
-import com.kactech.otj.OT.NumList;
 import com.kactech.otj.model.BasicSigningSupport;
 import com.kactech.otj.model.SigningSupport;
 import com.kactech.otj.model.XmlEntity;
@@ -217,7 +214,7 @@ public class Engines {
 			@Override
 			public boolean canConvert(Class type) {
 
-				boolean can = (AsciiEntity.class.isAssignableFrom(type));
+				boolean can = (MSG.AsciiEntity.class.isAssignableFrom(type));
 				//System.out.println("CAN B " + type + " " + can);
 				return can;
 			}
@@ -229,14 +226,14 @@ public class Engines {
 				una = cleanXML(una);
 				//System.out.println(una);
 				Object o = xstream.fromXML(una);
-				AsciiEntity ae = new AsciiEntity();
+				MSG.AsciiEntity ae = new MSG.AsciiEntity();
 				ae.entity = o;
 				return ae;
 			}
 
 			@Override
 			public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-				writer.setValue('\n' + AsciiA.setString(xstream.toXML(((AsciiEntity) source).entity)));
+				writer.setValue('\n' + AsciiA.setString(xstream.toXML(((MSG.AsciiEntity) source).entity)));
 			}
 		};
 		xstream.registerConverter(contractConverter, XStream.PRIORITY_VERY_HIGH);
@@ -273,7 +270,7 @@ public class Engines {
 		// make compact NumList even in prettyPrinting
 		builder.registerTypeAdapter(OT.NumList.class, new TypeAdapter<OT.NumList>() {
 			@Override
-			public NumList read(JsonReader in) throws IOException {
+			public OT.NumList read(JsonReader in) throws IOException {
 				if (in.peek() == JsonToken.NULL) {
 					in.nextNull();
 					return null;
@@ -289,7 +286,39 @@ public class Engines {
 			}
 
 			@Override
-			public void write(JsonWriter out, NumList value) throws IOException {
+			public void write(JsonWriter out, OT.NumList value) throws IOException {
+				if (value == null) {
+					out.nullValue();
+					return;
+				}
+				out.beginArray();
+				out.setIndent("");
+				for (Long l : value)
+					out.value(l);
+				out.endArray();
+				out.setIndent("  ");
+			}
+		});
+		// make compact NumList even in prettyPrinting
+		builder.registerTypeAdapter(OT.NumListAttribute.class, new TypeAdapter<OT.NumListAttribute>() {
+			@Override
+			public OT.NumListAttribute read(JsonReader in) throws IOException {
+				if (in.peek() == JsonToken.NULL) {
+					in.nextNull();
+					return null;
+				}
+
+				OT.NumListAttribute list = new OT.NumListAttribute();
+				in.beginArray();
+				while (in.hasNext())
+					list.add(in.nextLong());
+				in.endArray();
+
+				return list;
+			}
+
+			@Override
+			public void write(JsonWriter out, OT.NumListAttribute value) throws IOException {
 				if (value == null) {
 					out.nullValue();
 					return;
@@ -305,12 +334,12 @@ public class Engines {
 
 		builder.registerTypeAdapter(OT.ArmoredString.class, new TypeAdapter<OT.ArmoredString>() {
 			@Override
-			public ArmoredString read(JsonReader in) throws IOException {
+			public OT.ArmoredString read(JsonReader in) throws IOException {
 				throw new UnsupportedOperationException();
 			}
 
 			@Override
-			public void write(JsonWriter out, ArmoredString value) throws IOException {
+			public void write(JsonWriter out, OT.ArmoredString value) throws IOException {
 				if (value == null)
 					out.nullValue();
 				else if (value.getUnarmored() != null)
