@@ -18,3 +18,5 @@
 You can see how to use it looking at [bash/](bash/) scripts
 e.g. [transfer0.sh](bash/transfer0.sh) receives 100 from *opentxs*, sends him back *10* to check balances finally
 
+If you see `Error: Could not find or load main class com.kactech.otj.examples.App_otj` while running bin/otj.sh you first have to do `mvn compile` because *otj* makes use of unpacked classes from `./target` directory
+
