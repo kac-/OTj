@@ -54,8 +54,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.Security;
@@ -84,7 +84,6 @@ import com.kactech.otj.OT;
 import com.kactech.otj.Utils;
 import com.kactech.otj.log4j.MemoryAppender;
 import com.kactech.otj.model.BasicConnectionInfo;
-import com.kactech.otj.model.ConnectionInfo;
 
 @SuppressWarnings("serial")
 public class OTjAlpha extends JPanel implements ActionListener {
@@ -312,7 +311,7 @@ public class OTjAlpha extends JPanel implements ActionListener {
 	}
 
 	public static EClient buildClient() {
-		EClient client = new EClient(Paths.get("client"), localhostServerInfo());
+		EClient client = new EClient(new File("client"), localhostServerInfo());
 		client.setAssetType("CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA");//silver grams
 		return client;
 	}

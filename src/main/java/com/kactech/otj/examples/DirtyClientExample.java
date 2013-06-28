@@ -50,8 +50,7 @@
  ******************************************************************************/
 package com.kactech.otj.examples;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.File;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
@@ -68,14 +67,14 @@ import com.kactech.otj.JeromqTransport;
 import com.kactech.otj.MSG;
 import com.kactech.otj.OT;
 import com.kactech.otj.Utils;
-import com.kactech.otj.model.UserAccount;
 import com.kactech.otj.model.BasicUserAccount;
+import com.kactech.otj.model.UserAccount;
 
 public class DirtyClientExample {
 	static {
 		Security.addProvider(new BouncyCastleProvider());
 	}
-	private static final Path dirtyExampleAccountPath = Paths.get("testData", "acc", "dirtyExample.ser");
+	private static final File dirtyExampleAccountPath = Utils.file("testData", "acc", "dirtyExample.ser");
 	private static UserAccount testAccount;
 
 	public static UserAccount getAccount() {

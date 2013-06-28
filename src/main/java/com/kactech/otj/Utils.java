@@ -54,6 +54,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -61,10 +62,8 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -347,7 +346,7 @@ public class Utils {
 	}
 
 	public static String samy62(File file) throws IOException {
-		return samy62(Files.readAllBytes(file.toPath()));
+		return samy62(readBytes(file));
 	}
 
 	public static String samy62(byte[] input) {
@@ -779,31 +778,37 @@ public class Utils {
 	 * file i/o
 	 */
 
-	public static byte[] readBytes(File file) throws IOException {
-		return readBytes(file.toPath());
-	}
-
-	public static byte[] readBytes(Path path) throws IOException {
-		return Files.readAllBytes(path);
+	public static byte[] readBytes(File f) throws IOException {
+		FileInputStream fis = new FileInputStream(f);
+		FileChannel fChannel = fis.getChannel();
+		byte[] barray = new byte[(int) f.length()];
+		ByteBuffer bb = ByteBuffer.wrap(barray);
+		//bb.order(ByteOrder.LITTLE_ENDIAN);
+		fChannel.read(bb);
+		fChannel.close();
+		fis.close();
+		return bb.array();
 	}
 
 	public static String read(String first, String... restOfPath) throws IOException {
-		return read(Paths.get(first, restOfPath));
+		return read(file(first, restOfPath));
+	}
+
+	public static File file(String first, String... restOfPath) {
+		File f = new File(first);
+		for (String n : restOfPath)
+			f = new File(f, n);
+		return f;
 	}
 
 	public static String read(File file) throws IOException {
 		return new String(readBytes(file), UTF8);
 	}
 
-	public static String read(Path path) throws IOException {
-		return new String(readBytes(path), UTF8);
-	}
-
 	/*
 	 * create parent directories(if needed) before write
 	 */
-	public static void writeDirs(Path path, byte[] content) throws IOException {
-		File file = path.toFile();
+	public static void writeDirs(File file, byte[] content) throws IOException {
 		file.getParentFile().mkdirs();
 		FileOutputStream fos = new FileOutputStream(file);
 		fos.write(content);
@@ -811,7 +816,7 @@ public class Utils {
 		fos.close();
 	}
 
-	public static void writeDirs(Path path, String content) throws IOException {
-		writeDirs(path, content.getBytes(UTF8));
+	public static void writeDirs(File file, String content) throws IOException {
+		writeDirs(file, content.getBytes(UTF8));
 	}
 }

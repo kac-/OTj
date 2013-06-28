@@ -52,12 +52,11 @@ package com.kactech.otj.examples;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 import com.google.gson.reflect.TypeToken;
@@ -66,7 +65,7 @@ import com.kactech.otj.Utils;
 import com.thoughtworks.xstream.XStream;
 
 public class ExamplesUtils {
-	public static void serializeJava(Path path, Object obj) {
+	public static void serializeJava(File path, Object obj) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -79,10 +78,10 @@ public class ExamplesUtils {
 		}
 	}
 
-	public static Object deserializeJava(Path path) {
+	public static Object deserializeJava(File path) {
 		Object obj;
 		try {
-			ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Files.readAllBytes(path)));
+			ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Utils.readBytes(path)));
 			obj = ois.readObject();
 			ois.close();
 		} catch (Exception e) {
@@ -91,7 +90,7 @@ public class ExamplesUtils {
 		return obj;
 	}
 
-	public static void serializeXStream(Path path, Object obj) {
+	public static void serializeXStream(File path, Object obj) {
 		try {
 			Utils.writeDirs(path, new XStream().toXML(obj));
 		} catch (IOException e) {
@@ -100,7 +99,7 @@ public class ExamplesUtils {
 		}
 	}
 
-	public static Object deserializeXStream(Path path) {
+	public static Object deserializeXStream(File path) {
 		try {
 			return new XStream().fromXML(Utils.read(path));
 		} catch (IOException e) {

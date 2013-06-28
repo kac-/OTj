@@ -51,8 +51,8 @@
 package com.kactech.otj;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.util.ArrayList;
@@ -88,7 +88,7 @@ public class EClient implements Closeable, ReqNumManager {
 		LinkedList<Long> issuedNums;
 	}
 
-	Path dir;
+	File dir;
 	ConnectionInfo connInfo;
 	String assetType;
 	boolean createNewAccount;
@@ -101,39 +101,39 @@ public class EClient implements Closeable, ReqNumManager {
 	OT.Account cachedAccount;
 	MSG.GetNymboxResp cachedNymbox;
 
-	public EClient(Path dir, ConnectionInfo connInfo) {
+	public EClient(File dir, ConnectionInfo connInfo) {
 		super();
 		this.dir = dir;
 		this.connInfo = connInfo;
 	}
 
 	public void init() {
-		this.dir.toFile().mkdirs();
+		this.dir.mkdirs();
 		// user account
 		UserAccount uacc = null;
 		try {
-			uacc = Engines.gson.fromJson(Utils.read(dir.resolve(userAccountFile)), BasicUserAccount.class);
+			uacc = Engines.gson.fromJson(Utils.read(new File(dir, userAccountFile)), BasicUserAccount.class);
 			logger.info("local user account loaded");
 		} catch (Exception e) {
-			logger.warn(e.getMessage());
+			logger.warn("loading user account: {}", e.toString());
 		}
 		if (uacc == null) {
 			logger.info("creating local user account");
 			uacc = new BasicUserAccount().generate();
 			try {
-				Utils.writeDirs(dir.resolve(userAccountFile), Engines.gson.toJson(uacc));
+				Utils.writeDirs(new File(dir, userAccountFile), Engines.gson.toJson(uacc));
 			} catch (IOException e) {
-				logger.error("saving " + userAccountFile + " file", e);
+				logger.error("saving user account: {}", e.toString());
 				throw new RuntimeException(e);
 			}
 		}
 
 		// state
 		try {
-			state = Engines.gson.fromJson(Utils.read(dir.resolve(stateFile)), State.class);
+			state = Engines.gson.fromJson(Utils.read(new File(dir, stateFile)), State.class);
 			logger.info("state loaded");
 		} catch (Exception e) {
-			logger.warn(e.getMessage());
+			logger.warn("loading state: {}", e.toString());
 		}
 		if (state == null) {
 			logger.info("creating new state");
@@ -173,9 +173,9 @@ public class EClient implements Closeable, ReqNumManager {
 		logger.info("init done\nnymID: {}\naccountID: {}\nassetID: {}", client.getAccount().getNymID(),
 				state.accountID, state.assetType);
 		try {
-			Utils.writeDirs(dir.resolve(accountIDFile), state.accountID);
+			Utils.writeDirs(new File(dir, accountIDFile), state.accountID);
 		} catch (IOException e) {
-			logger.warn("storing account.id: " + e.toString());
+			logger.warn("storing accountID: " + e.toString());
 		}
 	}
 
@@ -206,7 +206,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 	public void saveState() {
 		try {
-			Utils.writeDirs(dir.resolve(stateFile), Engines.gson.toJson(state));
+			Utils.writeDirs(new File(dir, stateFile), Engines.gson.toJson(state));
 			logger.info("state saved");
 		} catch (IOException e) {
 			logger.error("saving state", e);

@@ -51,11 +51,8 @@
 package com.kactech.otj.examples;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.Security;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -71,6 +68,7 @@ import com.kactech.otj.EClient;
 import com.kactech.otj.Utils;
 import com.kactech.otj.examples.gui.OTjAlpha;
 
+@SuppressWarnings("static-access")
 public class App_otj {
 	static final String DEF_CLIENT_DIR = "client";
 	static Options options = new Options();
@@ -96,16 +94,15 @@ public class App_otj {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String command = null;	
+		String command = null;
 		String hisacct = null;
 		String hisacctName = null;
 		String hisacctAsset = null;
 		String asset = null;
 		String assetName = null;
 		List<String> argList = null;
-		boolean clean = false;
 		boolean newAccount = false;
-		Path dir = null;
+		File dir = null;
 
 		CommandLineParser parser = new GnuParser();
 		CommandLine cmd = null;
@@ -120,6 +117,7 @@ public class App_otj {
 			help();
 			System.exit(0);
 		}
+		@SuppressWarnings("unchecked")
 		List<String> list = cmd.getArgList();
 		if (list.size() > 1) {
 			System.err.println("only one command is supported, you've typed " + list);
@@ -207,10 +205,10 @@ public class App_otj {
 			}
 		}
 
-		dir = Paths.get(cmd.hasOption('d') ? cmd.getOptionValue('d') : DEF_CLIENT_DIR);
+		dir = new File(cmd.hasOption('d') ? cmd.getOptionValue('d') : DEF_CLIENT_DIR);
 
 		if (cmd.hasOption('x'))
-			del(dir.toFile());
+			del(dir);
 
 		newAccount = cmd.hasOption('n');
 
@@ -227,7 +225,7 @@ public class App_otj {
 			System.exit(-1);
 		}
 
-		EClient client = new EClient(Paths.get("client"), OTjAlpha.localhostServerInfo());
+		EClient client = new EClient(dir, OTjAlpha.localhostServerInfo());
 		client.setAssetType(asset != null ? asset : hisacctAsset);
 		client.setCreateNewAccount(newAccount);
 
