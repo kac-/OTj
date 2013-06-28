@@ -176,7 +176,7 @@ public class Client implements Closeable {
 	public MSG.Message send(MSG.Message msg) {
 		Engines.render(msg, getAccount().getCpairs().get("A").getPrivate());
 		if (DEBUG_JSON)
-			logger.debug("\n\"status\": \"request\", \"message\":\n{}", Engines.gson.toJson(msg));
+			logger.debug("\n{\"status\": \"request\", \"message\":\n{}},", Engines.gson.toJson(msg));
 		else
 			logger.debug("\n{}", msg.getSigned());
 		String signed = send_s(msg.getSigned());
@@ -184,7 +184,7 @@ public class Client implements Closeable {
 		rmsg.setSigned(signed);
 		Engines.parse(rmsg);
 		if (DEBUG_JSON)
-			logger.debug("\n\"status\": \"response\", \"message\":\n{}", Engines.gson.toJson(rmsg));
+			logger.debug("\n{\"status\": \"response\", \"message\":\n{}},", Engines.gson.toJson(rmsg));
 		else
 			logger.debug("\n{}", signed);
 		return rmsg;

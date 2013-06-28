@@ -394,6 +394,7 @@ public class EClient implements Closeable, ReqNumManager {
 			Engines.render(balance, signingKey);
 			ptx.getItems().add(balance);
 
+			ptx.setDateSigned(System.currentTimeMillis() / 1000);
 			Engines.render(ptx, signingKey);
 			pled.setTransactions(Collections.singletonList(ptx));
 			Engines.render(pled, signingKey);
@@ -553,7 +554,7 @@ public class EClient implements Closeable, ReqNumManager {
 		Engines.render(item, signingKey);
 		//System.out.println(item.raw);
 		otx.items.add(item);
-		otx.dateSigned = System.currentTimeMillis() / 1000;
+		otx.setDateSigned(System.currentTimeMillis() / 1000);
 		Engines.render(otx, signingKey);
 		otled.transactions.add(otx);
 		Engines.render(otled, signingKey);

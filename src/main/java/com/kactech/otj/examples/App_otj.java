@@ -96,7 +96,7 @@ public class App_otj {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String command = null;
+		String command = null;	
 		String hisacct = null;
 		String hisacctName = null;
 		String hisacctAsset = null;

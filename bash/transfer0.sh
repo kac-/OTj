@@ -21,6 +21,8 @@ $OT  acceptall
 $OTJ transfer --hisacct Silver --args "amount 10 memo \" \" "
 # accept 10
 $OT  acceptall
+# needs second one, why?
+$OT  acceptall
 # get accept 10
 $OTJ acceptall
 # get balances
