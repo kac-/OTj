@@ -10,6 +10,7 @@
  * `reload` reload trans# from our server nymfile
  
 #### supported options: ####
+ * `--server` select server by id or name, *Transactions.com*(localhost) and *vancouver btc* available
  * `--mypurse` specify asset type to use, can be `--mypurse silver` or `--mypurse d2Af13...`
  * `--hisacct` specify recipient asset account id 
  * `--args` args for `transfer` command 
