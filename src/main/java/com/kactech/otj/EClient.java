@@ -79,6 +79,7 @@ public class EClient implements Closeable, ReqNumManager {
 	static final String userAccountFile = "userAccount.json";
 	static final String stateFile = "state.json";
 	static final String accountIDFile = "account.id";
+	static final String userAccountReqFile = "createUserAccountReq.txt";
 
 	@XStreamAlias("EClientState")
 	public static class State {
@@ -197,7 +198,7 @@ public class EClient implements Closeable, ReqNumManager {
 			reqNum = client.getRequestRaw();
 		} catch (Client.NotInEnvelopeException e) {
 			logger.warn("probably have no user account at that server: register from local data");
-			if (!_createUserAccount().getSuccess())
+			if (!createUserAccount().getSuccess())
 				throw new IllegalStateException("cannot create user account");
 			reqNum = client.getRequestRaw();
 		}
@@ -287,7 +288,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 	public void reloadState() {
 		logger.info("before {}", Engines.gson.toJson(makeNums()));
-		takeNumsFrom(_createUserAccount().getNymfile().getEntity());
+		takeNumsFrom(createUserAccount().getNymfile().getEntity());
 		logger.info("after {}", Engines.gson.toJson(makeNums()));
 	}
 
@@ -562,6 +563,16 @@ public class EClient implements Closeable, ReqNumManager {
 		MSG.ProcessNymboxResp resp = client.processNymbox(otled, cachedNymbox.getNymboxHash());
 		logger.info("process nymbox success: {}", resp.getSuccess());
 		cachedNymbox = client.getNymbox();
+	}
+
+	private MSG.CreateUserAccountResp createUserAccount() {
+		MSG.CreateUserAccountResp resp = _createUserAccount();
+		try {
+			Utils.writeDirs(new File(dir, userAccountReqFile), resp.getInReferenceTo().getSigned());
+		} catch (Exception e) {
+			logger.warn("saving createUserAccountReq: {}", e.toString());
+		}
+		return resp;
 	}
 
 	private MSG.CreateUserAccountResp _createUserAccount() {
