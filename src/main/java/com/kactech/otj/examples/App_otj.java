@@ -79,7 +79,7 @@ public class App_otj {
 				.withDescription("<ARGS> = \"args for command\"").create('a'));
 		options.addOption(OptionBuilder.hasArg().withArgName("ID").withLongOpt("hisacct")
 				.withDescription("<ID> = his_account_id").create('t'));
-		options.addOption(OptionBuilder.hasArg().withArgName("ID").withLongOpt("asset")
+		options.addOption(OptionBuilder.hasArg().withArgName("ID").withLongOpt("mypurse")
 				.withDescription("<ID> = asset_type_id").create('s'));
 		options.addOption(OptionBuilder.hasArg().withArgName("DIR").withLongOpt("dir")
 				.withDescription("<DIR> = client_state_dir [./" + DEF_CLIENT_DIR + "]").create('d'));

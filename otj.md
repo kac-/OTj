@@ -12,7 +12,7 @@
 #### supported options: ####
  * `--clean` refresh otj by deleting `./client` folder
  * `--new` create fresh asset account 
- * `--asset` specify asset type to use, can be `--asset silver` or `--asset d2Af13...`
+ * `--mypurse` specify asset type to use, can be `--mypurse silver` or `--mypurse d2Af13...`
  * `--dir` specify otj client directory, default is `./client`
  
 You can see how to use it looking at [bash/](bash/) scripts
