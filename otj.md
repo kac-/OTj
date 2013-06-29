@@ -10,9 +10,11 @@
  * `reload` reload trans# from our server nymfile
  
 #### supported options: ####
+ * `--mypurse` specify asset type to use, can be `--mypurse silver` or `--mypurse d2Af13...`
+ * `--hisacct` specify recipient asset account id 
+ * `--args` args for `transfer` command 
  * `--clean` refresh otj by deleting `./client` folder
  * `--new` create fresh asset account 
- * `--mypurse` specify asset type to use, can be `--mypurse silver` or `--mypurse d2Af13...`
  * `--dir` specify otj client directory, default is `./client`
  
 You can see how to use it looking at [bash/](bash/) scripts
