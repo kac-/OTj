@@ -57,11 +57,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import com.google.gson.reflect.TypeToken;
 import com.kactech.otj.Engines;
 import com.kactech.otj.Utils;
+import com.kactech.otj.model.BasicConnectionInfo;
+import com.kactech.otj.model.ConnectionInfo;
 import com.thoughtworks.xstream.XStream;
 
 public class ExamplesUtils {
@@ -115,6 +120,29 @@ public class ExamplesUtils {
 					.getResourceAsStream("/com/kactech/otj/examples/sample-accounts.json")),
 					new TypeToken<List<SampleAccount>>() {
 					}.getType());
-		return sampleAccounts;
+		return new ArrayList<SampleAccount>(sampleAccounts);
+	}
+
+	private static Map<String, ConnectionInfo> servers;
+
+	public static Map<String, ConnectionInfo> getServers() {
+		if (servers == null) {
+			servers = Engines.gson.fromJson(new InputStreamReader(Engines.class
+					.getResourceAsStream("/com/kactech/otj/examples/sample-servers.json")),
+					new TypeToken<Map<String, BasicConnectionInfo>>() {
+					}.getType());
+		}
+		return servers;
+	}
+
+	public static ConnectionInfo findServer(String part) {
+		Map<String, ConnectionInfo> map = getServers();
+		for (Entry<String, ConnectionInfo> e : map.entrySet()) {
+			if (e.getKey().startsWith(part))
+				return e.getValue();
+			if (e.getValue().getID().startsWith(part))
+				return e.getValue();
+		}
+		return null;
 	}
 }

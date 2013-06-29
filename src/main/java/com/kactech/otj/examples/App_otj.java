@@ -66,11 +66,12 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import com.kactech.otj.Client;
 import com.kactech.otj.EClient;
 import com.kactech.otj.Utils;
-import com.kactech.otj.examples.gui.OTjAlpha;
+import com.kactech.otj.model.ConnectionInfo;
 
 @SuppressWarnings("static-access")
 public class App_otj {
 	static final String DEF_CLIENT_DIR = "client";
+	static final String DEF_SERVER_NAME = "Transactions.com";
 	static Options options = new Options();
 	static
 	{
@@ -78,11 +79,13 @@ public class App_otj {
 		options.addOption(OptionBuilder.hasArg().withArgName("ARGS").withLongOpt("args")
 				.withDescription("<ARGS> = \"args for command\"").create('a'));
 		options.addOption(OptionBuilder.hasArg().withArgName("ID").withLongOpt("hisacct")
-				.withDescription("<ID> = his_account_id").create('t'));
+				.withDescription("<ID> = his_account_id_or_name").create('t'));
 		options.addOption(OptionBuilder.hasArg().withArgName("ID").withLongOpt("mypurse")
-				.withDescription("<ID> = asset_type_id").create('s'));
+				.withDescription("<ID> = asset_type_id_or_name").create('p'));
 		options.addOption(OptionBuilder.hasArg().withArgName("DIR").withLongOpt("dir")
 				.withDescription("<DIR> = client_state_dir [./" + DEF_CLIENT_DIR + "]").create('d'));
+		options.addOption(OptionBuilder.hasArg().withArgName("ID").withLongOpt("server")
+				.withDescription("<ID> = server_id_or_name [" + DEF_SERVER_NAME + "]").create('s'));
 		options.addOption("h", "help", false, "print this help");
 		options.addOption("x", "clean", false, "delete 'client' dir");
 		options.addOption("n", "new", false, "create new asset account");
@@ -103,6 +106,7 @@ public class App_otj {
 		List<String> argList = null;
 		boolean newAccount = false;
 		File dir = null;
+		ConnectionInfo connection = null;
 
 		CommandLineParser parser = new GnuParser();
 		CommandLine cmd = null;
@@ -129,6 +133,21 @@ public class App_otj {
 
 		List<SampleAccount> accounts = ExamplesUtils.getSampleAccounts();
 
+		if (cmd.hasOption('s')) {
+			String v = cmd.getOptionValue('s').trim();
+			connection = ExamplesUtils.findServer(v);
+			if (connection == null) {
+				System.err.println("unknown server: " + v);
+				System.exit(-1);
+			}
+		} else {
+			connection = ExamplesUtils.findServer(DEF_SERVER_NAME);
+			if (connection == null) {
+				System.err.println("default server not found server: " + DEF_SERVER_NAME);
+				System.exit(-1);
+			}
+		}
+
 		if (cmd.hasOption('t')) {
 			String v = cmd.getOptionValue('t');
 			for (SampleAccount ac : accounts)
@@ -146,8 +165,8 @@ public class App_otj {
 					System.exit(-1);
 				}
 		}
-		if (cmd.hasOption('s')) {
-			String v = cmd.getOptionValue('s');
+		if (cmd.hasOption('p')) {
+			String v = cmd.getOptionValue('p');
 			for (SampleAccount ac : accounts)
 				if (ac.assetName.startsWith(v)) {
 					asset = ac.assetID;
@@ -211,7 +230,7 @@ public class App_otj {
 			del(dir);
 
 		newAccount = cmd.hasOption('n');
-
+		System.out.println("server: " + connection.getEndpoint() + " " + connection.getID());
 		System.out.println("command: '" + command + "'");
 		System.out.println("args: " + argList);
 		System.out.println("hisacct: " + hisacct);
@@ -225,7 +244,7 @@ public class App_otj {
 			System.exit(-1);
 		}
 
-		EClient client = new EClient(dir, OTjAlpha.localhostServerInfo());
+		EClient client = new EClient(dir, connection);
 		client.setAssetType(asset != null ? asset : hisacctAsset);
 		client.setCreateNewAccount(newAccount);
 

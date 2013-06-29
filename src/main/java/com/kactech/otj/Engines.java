@@ -59,6 +59,7 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
@@ -450,6 +451,39 @@ public class Engines {
 				out.value(((RSAPrivateKey) value.getPrivate()).getPrivateExponent());
 				out.name("publicExponent");
 				out.value(((RSAPublicKey) value.getPublic()).getPublicExponent());
+				out.endObject();
+			}
+		});
+		builder.registerTypeAdapter(PublicKey.class, new TypeAdapter<PublicKey>() {
+			@Override
+			public PublicKey read(JsonReader in) throws IOException {
+				in.beginObject();
+				BigInteger mod = null, pubExp = null;
+				for (int i = 0; i < 2; i++) {
+					String name = in.nextName();
+					if ("modulus".equals(name))
+						mod = new BigInteger(in.nextString());
+					else if ("publicExponent".equals(name))
+						pubExp = new BigInteger(in.nextString());
+				}
+				in.endObject();
+				try {
+					KeyFactory kf = KeyFactory.getInstance("RSA");
+					return kf.generatePublic(new RSAPublicKeySpec(mod, pubExp));
+				} catch (InvalidKeySpecException e) {
+					throw new RuntimeException(e);
+				} catch (NoSuchAlgorithmException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			@Override
+			public void write(JsonWriter out, PublicKey value) throws IOException {
+				out.beginObject();
+				out.name("modulus");
+				out.value(((RSAPublicKey) value).getModulus());
+				out.name("publicExponent");
+				out.value(((RSAPublicKey) value).getPublicExponent());
 				out.endObject();
 			}
 		});
