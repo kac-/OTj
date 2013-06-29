@@ -135,7 +135,7 @@
 					<appendAssemblyId>false</appendAssemblyId>
 					<archive>
 						<manifest>
-							<mainClass>com.kactech.otj.examples.gui.OTjAlpha</mainClass>
+							<mainClass>com.kactech.otj.examples.MainSelector</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
