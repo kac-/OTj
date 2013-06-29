@@ -2,7 +2,10 @@
 
 # setup apps
 OT="opentxs --mynym FT --myacct Silver" 
+# run otj with pomrunner
 OTJ=bin/otj.sh
+# run otj using app .jar
+#OTJ="java -jar "`ls target/OTj-app-*.jar | tail -n -1`
 
 # get initial OT-side balance
 OT_START_BALANCE=$($OT balance 2>&1 | grep Balance)
