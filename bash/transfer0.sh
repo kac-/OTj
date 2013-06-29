@@ -7,8 +7,8 @@ OTJ=bin/otj.sh
 # get initial OT-side balance
 OT_START_BALANCE=$($OT balance 2>&1 | grep Balance)
 
-# -x: remove 'client' folder; --asset silver: create silver account at init()
-$OTJ -x --asset silver
+# -x: remove 'client' folder; --mypurse silver: create silver account at init()
+$OTJ -x --mypurse silver
 # read OTJ new accountID from client/account.id 
 OTJ_ID=$(cat client/account.id )
 # send 100 to OTJ
