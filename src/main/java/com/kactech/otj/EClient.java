@@ -215,18 +215,19 @@ public class EClient implements Closeable, ReqNumManager {
 		}
 	}
 
-	public void notarizeTransaction(String sendTo, long amount) throws Exception {
-		ensureTransNums();
+	public boolean notarizeTransaction(String sendTo, long amount) throws Exception {
+		//ensureTransNums();
 		processInbox();
 		OT.Ledger outboxLedger = client.getOutbox(state.accountID).getOutboxLedger();
 		String nymboxHash = cachedNymbox.getNymboxHash();
 		OT.Account account = client.getAccount(state.accountID).getAssetAccount();
 		logger.info("balance: {}", account.getBalance().getAmount());
-		notarizeTransaction(sendTo, amount, account, outboxLedger, nymboxHash);
+		boolean ret = notarizeTransaction(sendTo, amount, account, outboxLedger, nymboxHash);
 		processNymbox();
+		return ret;
 	}
 
-	private void notarizeTransaction(String sendTo, long amount, OT.Account acc, OT.Ledger outboxLedger,
+	private boolean notarizeTransaction(String sendTo, long amount, OT.Account acc, OT.Ledger outboxLedger,
 			String nymboxHash)
 			throws Exception {
 
@@ -239,20 +240,20 @@ public class EClient implements Closeable, ReqNumManager {
 		OT.Ledger ledger = from(acc);
 		ledger.setType(OT.Ledger.Type.message);
 
-		OT.Transaction tx = from(ledger);
-		tx.setType(OT.Transaction.Type.transfer);
-		tx.setTransactionNum(transactionNum);
+		OT.Transaction otx = from(ledger);
+		otx.setType(OT.Transaction.Type.transfer);
+		otx.setTransactionNum(transactionNum);
 
-		OT.Item transfer = from(tx);
+		OT.Item transfer = from(otx);
 		transfer.setType(OT.Item.Type.transfer);
 		transfer.setStatus(OT.Item.Status.request);
 		transfer.setAmount(amount);
 		transfer.setToAccountID(sendTo);
 
 		Engines.render(transfer, signingKey);
-		tx.getItems().add(transfer);
+		otx.getItems().add(transfer);
 
-		OT.Item balance = from(tx);
+		OT.Item balance = from(otx);
 		balance.setType(OT.Item.Type.balanceStatement);
 		balance.setStatus(OT.Item.Status.request);
 		balance.setAmount(acc.getBalance().getAmount() - transfer.getAmount());
@@ -263,27 +264,39 @@ public class EClient implements Closeable, ReqNumManager {
 		balance.setTransactionReport(reports);
 
 		Engines.render(balance, signingKey);
-		tx.getItems().add(balance);
+		otx.getItems().add(balance);
 
-		tx.setDateSigned(System.currentTimeMillis() / 1000);
-		Engines.render(tx, signingKey);
+		otx.setDateSigned(System.currentTimeMillis() / 1000);
+		Engines.render(otx, signingKey);
 
-		ledger.getTransactions().add(tx);
+		ledger.getTransactions().add(otx);
 		Engines.render(ledger, signingKey);
 
 		//System.out.println(json(tx));
 
 		MSG.NotarizeTransactionsResp resp = client.notarizeTransaction(ledger, nymboxHash);
 
-		if (resp.getSuccess()) {
-			nums.transactionNums.removeNum(transactionNum);
-			//nums.issuedNums.removeNum(transactionNum);
-			takeNumsFrom(nums);
-			//removeTransactioNum(transactionNum);
-
-			//System.out.println(json(state));
-		}
 		logger.info("notarize transaction success: {}", resp.getSuccess());
+		boolean balanceRejected = false;
+		if (resp.getSuccess()) {
+			//takeNumsFrom(nums);
+			if (resp.getResponseLedger().getTransactions().size() > 1)
+				logger.warn("notarize response ledger contains more than 1 tx");
+			OT.Transaction tx = resp.getResponseLedger().getTransactions().iterator().next();
+			for (OT.Item item : tx.getItems())
+				if (item.getType() == OT.Item.Type.atBalanceStatement)
+					if (item.getStatus() == OT.Item.Status.rejection) {
+						logger.warn("inbox balance rejected");
+						balanceRejected = true;
+						break;
+					}
+
+			nums.transactionNums.removeNum(transactionNum);
+			if (balanceRejected)
+				nums.issuedNums.removeNum(transactionNum);
+			takeNumsFrom(nums);
+		}
+		return resp.getSuccess() && !balanceRejected;
 	}
 
 	public void reloadState() {
