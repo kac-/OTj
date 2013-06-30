@@ -297,7 +297,7 @@ public class App_otj {
 		file.delete();
 	}
 
-	static boolean mayBeValid(String id) {
+	public static boolean mayBeValid(String id) {
 		try {
 			if (id.length() < 20)
 				throw new Exception();
