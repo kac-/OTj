@@ -78,6 +78,7 @@ public class EClient implements Closeable, ReqNumManager {
 	static final Logger logger = LoggerFactory.getLogger(EClient.class);
 	static final String userAccountFile = "userAccount.json";
 	static final String stateFile = "state.json";
+	static final String nymIDFile = "nym.id";
 	static final String accountIDFile = "account.id";
 	static final String userAccountReqFile = "createUserAccountReq.txt";
 
@@ -173,6 +174,11 @@ public class EClient implements Closeable, ReqNumManager {
 		}
 		logger.info("init done\nnymID: {}\naccountID: {}\nassetID: {}", client.getAccount().getNymID(),
 				state.accountID, state.assetType);
+		try {
+			Utils.writeDirs(new File(dir, nymIDFile), client.getAccount().getNymID());
+		} catch (IOException e) {
+			logger.warn("storing nymID: " + e.toString());
+		}
 		try {
 			Utils.writeDirs(new File(dir, accountIDFile), state.accountID);
 		} catch (IOException e) {
@@ -286,7 +292,7 @@ public class EClient implements Closeable, ReqNumManager {
 			for (OT.Item item : tx.getItems())
 				if (item.getType() == OT.Item.Type.atBalanceStatement)
 					if (item.getStatus() == OT.Item.Status.rejection) {
-						logger.warn("inbox balance rejected");
+						logger.warn("notarize balance rejected");
 						balanceRejected = true;
 						break;
 					}
@@ -309,7 +315,7 @@ public class EClient implements Closeable, ReqNumManager {
 		return cachedAccount = client.getAccount(state.accountID).getAssetAccount();
 	}
 
-	public void processInbox() throws Exception {
+	public void processInbox() {
 		logger.info("processInbox()");
 		ensureTransNums();
 		MSG.GetInboxResp inbox = client.getInbox(state.accountID);
@@ -322,7 +328,7 @@ public class EClient implements Closeable, ReqNumManager {
 		processNymbox();
 	}
 
-	private void processInbox(OT.Ledger inboxLedger, OT.Account assetAcount, OT.Ledger outboxLedger) throws Exception {
+	private void processInbox(OT.Ledger inboxLedger, OT.Account assetAcount, OT.Ledger outboxLedger) {
 		logger.info("processInbox(<args>)");
 		if (inboxLedger.getInboxRecords() != null) {
 			List<OT.TransactionReport> reports = makeOutboxReports(outboxLedger);
