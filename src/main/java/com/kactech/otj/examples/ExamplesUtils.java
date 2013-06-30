@@ -58,6 +58,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -144,5 +145,32 @@ public class ExamplesUtils {
 				return e.getValue();
 		}
 		return null;
+	}
+
+	public static SampleAccount findAsset(String part) {
+		for (SampleAccount acct : getSampleAccounts())
+			if (acct.assetName.startsWith(part) || acct.assetID.startsWith(part))
+				return acct;
+		return null;
+	}
+
+	private static Map<String, String> contractsURI = new HashMap<String, String>();
+	static {
+		// Transactions.com localhost test server
+		contractsURI
+				.put("tBy5mL14qSQXCJK7Uz3WlTOKRP9M0JZksA3Eg7EnnQ1",
+						"https://raw.github.com/FellowTraveler/Open-Transactions/master/sample-data/ot-sample-data/server_data/contracts/tBy5mL14qSQXCJK7Uz3WlTOKRP9M0JZksA3Eg7EnnQ1");
+		//vancouver bitcoin test server
+		contractsURI.put("4x3jrBs4OZ8DN7rOTSbdqb8bdrG0O5sMFzArgZP7NXO",
+				"https://raw.github.com/stretch/OT-BitcoinServer/master/test-contracts/SERVER-vanbtc.otc");
+		// silver grams asset
+		contractsURI
+				.put("CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA",
+						"https://raw.github.com/FellowTraveler/Open-Transactions/master/sample-data/ot-sample-data/server_data/contracts/CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA");
+
+	}
+
+	public static String getContractURI(String id) {
+		return contractsURI.get(id);
 	}
 }
