@@ -402,6 +402,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 			//System.out.println(json(pled));
 			MSG.ProcessInboxResp resp = client.processInbox(pled, nymboxHash);
+			logger.info("process inbox success: {}", resp.getSuccess());
 			// save removed nums
 			if (resp.getSuccess()) {
 				//takeNumsFrom(nums);
@@ -425,7 +426,6 @@ public class EClient implements Closeable, ReqNumManager {
 				}
 				//removeTransactioNum(transactionNum);
 			}
-			logger.info("process inbox success: {}", resp.getSuccess());
 		}
 	}
 
@@ -447,9 +447,14 @@ public class EClient implements Closeable, ReqNumManager {
 		return cachedNymbox = client.getNymbox();
 	}
 
-	public void processNymbox() {
-		logger.info("processNymbox()");
-		getNymbox();
+	public MSG.ProcessNymboxResp processNymbox() {
+		return processNymbox(true);
+	}
+
+	public MSG.ProcessNymboxResp processNymbox(boolean getFresh) {
+		logger.info("processNymbox({})", getFresh);
+		if (getFresh || cachedNymbox == null)
+			getNymbox();
 		for (OT.BoxRecord rec : cachedNymbox.getNymboxLedger().getNymboxRecords())
 			if (rec.getType() == OT.Transaction.Type.message) {
 				GetBoxReceiptResp receipt = client.getBoxReceipt(cachedNymbox.getNymID(), cachedNymbox
@@ -467,10 +472,12 @@ public class EClient implements Closeable, ReqNumManager {
 				}
 			}
 		if (cachedNymbox.getNymboxLedger().getNymboxRecords().size() > 1)
-			processCachedNymbox();
+			return processCachedNymbox();
+		else
+			return null;
 	}
 
-	private void processCachedNymbox() {
+	private MSG.ProcessNymboxResp processCachedNymbox() {
 		logger.info("processCachedNymbox()");
 
 		OT.Ledger nymled = cachedNymbox.getNymboxLedger();
@@ -562,7 +569,22 @@ public class EClient implements Closeable, ReqNumManager {
 
 		MSG.ProcessNymboxResp resp = client.processNymbox(otled, cachedNymbox.getNymboxHash());
 		logger.info("process nymbox success: {}", resp.getSuccess());
+		if (resp.getSuccess()) {
+			//takeNumsFrom(nums);
+			boolean transactionRejected = false;
+			if (resp.getResponseLedger().getTransactions().size() > 1)
+				logger.warn("nymbox response ledger contains more than 1 tx");
+			OT.Transaction tx = resp.getResponseLedger().getTransactions().iterator().next();
+			for (OT.Item it : tx.getItems())
+				if (it.getType() == OT.Item.Type.atTransactionStatement)
+					if (it.getStatus() == OT.Item.Status.rejection) {
+						logger.warn("transaction statement rejected");
+						transactionRejected = true;
+						break;
+					}
+		}
 		cachedNymbox = client.getNymbox();
+		return resp;
 	}
 
 	private MSG.CreateUserAccountResp createUserAccount() {
@@ -763,6 +785,10 @@ public class EClient implements Closeable, ReqNumManager {
 
 	public String getAssetType() {
 		return assetType;
+	}
+
+	public MSG.GetNymboxResp getCachedNymbox() {
+		return cachedNymbox;
 	}
 
 	public OT.Account getCachedAccount() {
