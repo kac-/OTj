@@ -1498,6 +1498,41 @@ public class OT {
 
 	@XStreamAlias("notaryProviderContract")
 	public static class NotaryProviderContract extends Contract {
+		public static class NotaryServer {
+			@XStreamAsAttribute
+			String hostname;
+			@XStreamAsAttribute
+			Integer port;
+			@XStreamAsAttribute
+			String URL;
+
+			// get/set
+
+			public String getHostname() {
+				return hostname;
+			}
+
+			public void setHostname(String hostname) {
+				this.hostname = hostname;
+			}
+
+			public Integer getPort() {
+				return port;
+			}
+
+			public void setPort(Integer port) {
+				this.port = port;
+			}
+
+			public String getURL() {
+				return URL;
+			}
+
+			public void setURL(String uRL) {
+				URL = uRL;
+			}
+		}
+
 		NotaryServer notaryServer;
 		Signer signer;
 		@XStreamImplicit(itemFieldName = "key")
@@ -1576,41 +1611,6 @@ public class OT {
 		}
 	}
 
-	public static class NotaryServer {
-		@XStreamAsAttribute
-		String hostname;
-		@XStreamAsAttribute
-		Integer port;
-		@XStreamAsAttribute
-		String URL;
-
-		// get/set
-
-		public String getHostname() {
-			return hostname;
-		}
-
-		public void setHostname(String hostname) {
-			this.hostname = hostname;
-		}
-
-		public Integer getPort() {
-			return port;
-		}
-
-		public void setPort(Integer port) {
-			this.port = port;
-		}
-
-		public String getURL() {
-			return URL;
-		}
-
-		public void setURL(String uRL) {
-			URL = uRL;
-		}
-	}
-
 	public static class Signer {
 		@XStreamAsAttribute
 		Boolean hasCredentials;
@@ -1671,6 +1671,214 @@ public class OT {
 
 		public void setCredentials(CredentialMap credentials) {
 			this.credentials = credentials;
+		}
+
+	}
+
+	@XStreamAlias("notaryServer")
+	public static class NotaryServer {
+		@XStreamAsAttribute
+		String version;
+		String serverID;
+		String serverUserID;
+		long transactionNum;
+
+		String cachedKey;
+		@XStreamImplicit(itemFieldName = "assetType")
+		List<AssetType> assetTypes;
+		@XStreamImplicit(itemFieldName = "basketInfo")
+		List<BasketInfo> basketInfos;
+		@XStreamImplicit(itemFieldName = "accountList")
+		List<AccountList> accountLists;
+
+		// get/set
+
+		public String getVersion() {
+			return version;
+		}
+
+		public void setVersion(String version) {
+			this.version = version;
+		}
+
+		public String getServerID() {
+			return serverID;
+		}
+
+		public void setServerID(String serverID) {
+			this.serverID = serverID;
+		}
+
+		public String getServerUserID() {
+			return serverUserID;
+		}
+
+		public void setServerUserID(String serverUserID) {
+			this.serverUserID = serverUserID;
+		}
+
+		public long getTransactionNum() {
+			return transactionNum;
+		}
+
+		public void setTransactionNum(long transactionNum) {
+			this.transactionNum = transactionNum;
+		}
+
+		public String getCachedKey() {
+			return cachedKey;
+		}
+
+		public void setCachedKey(String cachedKey) {
+			this.cachedKey = cachedKey;
+		}
+
+		public List<AssetType> getAssetTypes() {
+			return assetTypes;
+		}
+
+		public void setAssetTypes(List<AssetType> assetTypes) {
+			this.assetTypes = assetTypes;
+		}
+
+		public List<BasketInfo> getBasketInfos() {
+			return basketInfos;
+		}
+
+		public void setBasketInfos(List<BasketInfo> basketInfos) {
+			this.basketInfos = basketInfos;
+		}
+
+		public List<AccountList> getAccountLists() {
+			return accountLists;
+		}
+
+		public void setAccountLists(List<AccountList> accountLists) {
+			this.accountLists = accountLists;
+		}
+
+	}
+
+	public static class AssetType {
+		@XStreamAsAttribute
+		String name;
+		@XStreamAsAttribute
+		String assetTypeID;
+
+		// get/set
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getAssetTypeID() {
+			return assetTypeID;
+		}
+
+		public void setAssetTypeID(String assetTypeID) {
+			this.assetTypeID = assetTypeID;
+		}
+
+	}
+
+	public static class BasketInfo {
+		@XStreamAsAttribute
+		String basketID;
+		@XStreamAsAttribute
+		String basketAcctID;
+		@XStreamAsAttribute
+		String basketContractID;
+
+		// get/set
+
+		public String getBasketID() {
+			return basketID;
+		}
+
+		public void setBasketID(String basketID) {
+			this.basketID = basketID;
+		}
+
+		public String getBasketAcctID() {
+			return basketAcctID;
+		}
+
+		public void setBasketAcctID(String basketAcctID) {
+			this.basketAcctID = basketAcctID;
+		}
+
+		public String getBasketContractID() {
+			return basketContractID;
+		}
+
+		public void setBasketContractID(String basketContractID) {
+			this.basketContractID = basketContractID;
+		}
+
+	}
+
+	public static class AccountList {
+		@XStreamAsAttribute
+		Account.Type type;
+		@XStreamAsAttribute
+		Integer count;
+		@XStreamImplicit(itemFieldName = "accountEntry")
+		List<AccountEntry> accounts;
+
+		// get/set
+
+		public Account.Type getType() {
+			return type;
+		}
+
+		public void setType(Account.Type type) {
+			this.type = type;
+		}
+
+		public Integer getCount() {
+			return count;
+		}
+
+		public void setCount(Integer count) {
+			this.count = count;
+		}
+
+		public List<AccountEntry> getAccounts() {
+			return accounts;
+		}
+
+		public void setAccounts(List<AccountEntry> accounts) {
+			this.accounts = accounts;
+		}
+
+	}
+
+	public static class AccountEntry {
+		@XStreamAsAttribute
+		String assetTypeID;
+		@XStreamAsAttribute
+		String accountID;
+
+		// get/set
+
+		public String getAssetTypeID() {
+			return assetTypeID;
+		}
+
+		public void setAssetTypeID(String assetTypeID) {
+			this.assetTypeID = assetTypeID;
+		}
+
+		public String getAccountID() {
+			return accountID;
+		}
+
+		public void setAccountID(String accountID) {
+			this.accountID = accountID;
 		}
 
 	}
