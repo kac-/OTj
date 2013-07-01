@@ -150,7 +150,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 		logger.info("creating client");
 		client = new Client(uacc, connInfo.getID(), connInfo.getPublicKey(), new JeromqTransport(
-				connInfo.getEndpoint()));
+				connInfo.getEndpoint()), connInfo.getNymID());
 		client.setReqNumManager(this);
 
 		// if accountID is null or asset different than saved than create new one

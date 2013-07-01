@@ -106,7 +106,10 @@ import org.bouncycastle.openpgp.PGPObjectFactory;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPUtil;
 import org.bouncycastle.openpgp.operator.jcajce.JcaPGPKeyConverter;
+import org.bouncycastle.openssl.PEMException;
+import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.x509.X509StreamParser;
 import org.w3c.dom.Document;
@@ -543,7 +546,7 @@ public class Utils {
 	/*
 	 * got it, dizzy code, it's real nymIDSource(when escaped) and publicInfo (if not escaped)
 	 */
-	public static String toPemPackedEncodedArmored(PublicKey publicKey, boolean escaped) {
+	public static String toRawPublicInfo(PublicKey publicKey, boolean escaped) {
 		StringWriter sw = new StringWriter();
 		PEMWriter pemw = new PEMWriter(sw);
 		try {
@@ -561,12 +564,40 @@ public class Utils {
 				+ "-----END PUBLIC KEY-----\n";
 	}
 
+	private static final JcaPEMKeyConverter _jcaPEMKeyConverter = new JcaPEMKeyConverter();
+
+	public static PublicKey fromRawPublicInfo(String str, boolean escaped) {
+		str = unarmor(str, escaped);
+		byte[] by = base64Decode(str);
+		try {
+			str = unpack(by, String.class);
+		} catch (PackerException e) {
+			// you've fucked up something
+			throw new RuntimeException(e);
+		}
+		PEMParser p = new PEMParser(new StringReader(str));
+		Object pobj;
+		try {
+			pobj = p.readObject();
+		} catch (IOException e) {
+			// io exception? hehe
+			throw new RuntimeException(e);
+		}
+		SubjectPublicKeyInfo spub = SubjectPublicKeyInfo.getInstance(pobj);
+		try {
+			return _jcaPEMKeyConverter.getPublicKey(spub);
+		} catch (PEMException e) {
+			// dont' bother
+			throw new RuntimeException(e);
+		}
+	}
+
 	public static String toNymID(PublicKey publicKey) {
-		return samy62(toPemPackedEncodedArmored(publicKey, true).getBytes(US_ASCII));
+		return samy62(toRawPublicInfo(publicKey, true).getBytes(US_ASCII));
 	}
 
 	public static String toNymIDSource(PublicKey publicKey) {
-		String str = toPemPackedEncodedArmored(publicKey, true);
+		String str = toRawPublicInfo(publicKey, true);
 		byte[] by = pack(str);
 		by = zlibCompress(by);
 		return base64EncodeString(by, true);
@@ -584,7 +615,7 @@ public class Utils {
 	}
 
 	public static String toPublicInfo(PublicKey publicKey) {
-		String str = toPemPackedEncodedArmored(publicKey, false);
+		String str = toRawPublicInfo(publicKey, false);
 		byte[] by = pack(str);
 		by = zlibCompress(by);
 		return base64EncodeString(by, true);

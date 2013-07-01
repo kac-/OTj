@@ -83,12 +83,12 @@ public class BasicUserAccount implements UserAccount, Serializable {
 		for (String keyName : keyNames) {
 			KeyPair kp = kpg.generateKeyPair();
 			pairs.put(keyName, kp);
-			sources.put(keyName, Utils.toPemPackedEncodedArmored(kp.getPublic(), false));
+			sources.put(keyName, Utils.toRawPublicInfo(kp.getPublic(), false));
 			kp = kpg.generateKeyPair();
 			cpairs.put(keyName, kp);
-			csources.put(keyName, Utils.toPemPackedEncodedArmored(kp.getPublic(), false));
+			csources.put(keyName, Utils.toRawPublicInfo(kp.getPublic(), false));
 		}
-		nymIDSource = Utils.toPemPackedEncodedArmored(pairs.get("S").getPublic(), true);
+		nymIDSource = Utils.toRawPublicInfo(pairs.get("S").getPublic(), true);
 		nymID = Utils.toNymID(pairs.get("S").getPublic());
 		return this;
 	}

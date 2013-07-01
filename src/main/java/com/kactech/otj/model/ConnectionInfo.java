@@ -58,4 +58,6 @@ public interface ConnectionInfo {
 	public String getEndpoint();
 
 	public String getID();
+
+	public String getNymID();
 }

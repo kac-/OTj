@@ -56,12 +56,18 @@ public class BasicConnectionInfo implements ConnectionInfo {
 	PublicKey publicKey;
 	String endpoint;
 	String id;
+	String nymID;
 
 	public BasicConnectionInfo(String id, PublicKey publicKey, String endpoint) {
+		this(id, publicKey, endpoint, null);
+	}
+
+	public BasicConnectionInfo(String id, PublicKey publicKey, String endpoint, String nymID) {
 		super();
 		this.publicKey = publicKey;
 		this.endpoint = endpoint;
 		this.id = id;
+		this.nymID = nymID;
 	}
 
 	@Override
@@ -77,6 +83,11 @@ public class BasicConnectionInfo implements ConnectionInfo {
 	@Override
 	public String getID() {
 		return id;
+	}
+
+	@Override
+	public String getNymID() {
+		return nymID;
 	}
 
 }

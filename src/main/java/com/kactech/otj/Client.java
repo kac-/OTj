@@ -121,12 +121,17 @@ public class Client implements Closeable {
 	}
 
 	public Client(UserAccount account, String serverID, PublicKey serverPublicKey, Transport transport) {
+		this(account, serverID, serverPublicKey, transport, null);
+	}
+
+	public Client(UserAccount account, String serverID, PublicKey serverPublicKey, Transport transport,
+			String serverNymID) {
 		super();
 		this.account = account;
 		this.serverID = serverID;
 		this.serverPublicKey = serverPublicKey;
 		this.transport = transport;
-		this.serverNymID = Utils.toNymID(serverPublicKey);
+		this.serverNymID = serverNymID == null ? Utils.toNymID(serverPublicKey) : serverNymID;
 	}
 
 	@Override
