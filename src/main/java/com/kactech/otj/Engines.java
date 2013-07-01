@@ -148,7 +148,7 @@ public class Engines {
 
 		if (false)
 			xstream.processAnnotations(new Class[] { OT.Ledger.class, OT.Transaction.class, OT.Item.class,
-					OT.Pseudonym.class, OT.BoxRecord.class,
+					OT.User.class, OT.BoxRecord.class,
 
 			});
 		else

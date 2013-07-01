@@ -199,13 +199,13 @@ public class Client implements Closeable {
 		return createUserAccountNew().getSuccess();
 	}
 
-	public MSG.CreateUserAccountResp createUserAccountNew(OT.Pseudonym credentialList, OT.CredentialMap credentials) {
+	public MSG.CreateUserAccountResp createUserAccountNew(OT.User credentialList, OT.CredentialMap credentials) {
 		MSG.CreateUserAccount req = new MSG.CreateUserAccount();
 		req.setNymID(account.getNymID());
 		req.setServerID(serverID);
 		//req.setRequestNum(getRequest());
 		req.setRequestNum(1l);//TODO find out why
-		req.setCredentialList(new MSG.AsciiEntity<OT.Pseudonym>(credentialList));
+		req.setCredentialList(new MSG.AsciiEntity<OT.User>(credentialList));
 		req.setCredentials(credentials);
 		return send(new MSG.Message().set(req)).getCreateUserAccountResp();
 	}
@@ -216,7 +216,7 @@ public class Client implements Closeable {
 		pairs = getAccount().getPairs();
 		cpairs = getAccount().getCpairs();
 
-		OT.Pseudonym credentialList = new OT.Pseudonym();
+		OT.User credentialList = new OT.User();
 		OT.CredentialMap credentials = new OT.CredentialMap();
 
 		String nymIDSource = account.getNymIDSource();
@@ -268,7 +268,7 @@ public class Client implements Closeable {
 		credentials.put(masterCredentialID, masterCredential);
 		credentials.put(keyCredentialID, keyCredential);
 
-		credentialList = new OT.Pseudonym();
+		credentialList = new OT.User();
 		credentialList.setNymID(nymID);
 		credentialList.setNymIDSource(new OT.ArmoredString(nymIDSource));
 		credentialList.setMasterCredential(new OT.CredentialIdentifier(masterCredentialID, null, true));

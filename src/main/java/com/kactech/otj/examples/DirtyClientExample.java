@@ -137,7 +137,7 @@ public class DirtyClientExample {
 			// if user has credentials take his nymIDSource, for public key
 			RSAPublicKey recipientPublicKey;
 			if (cu.getHasCredentials()) {
-				OT.Pseudonym credentialList = cu.getCredentialList().getEntity();
+				OT.User credentialList = cu.getCredentialList().getEntity();
 				String nymIDSource = credentialList.getNymIDSource().getRaw();
 				recipientPublicKey = (RSAPublicKey) Utils.fromIDSource(nymIDSource);
 			} else {

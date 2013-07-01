@@ -487,7 +487,7 @@ public class MSG {
 		String nymPublicKey;
 		Message inReferenceTo;
 
-		AsciiEntity<OT.Pseudonym> credentialList;
+		AsciiEntity<OT.User> credentialList;
 		OT.StringMap credentials;//TODO CredentialsMap
 
 		// get/set
@@ -532,11 +532,11 @@ public class MSG {
 			this.credentials = credentials;
 		}
 
-		public AsciiEntity<OT.Pseudonym> getCredentialList() {
+		public AsciiEntity<OT.User> getCredentialList() {
 			return credentialList;
 		}
 
-		public void setCredentialList(AsciiEntity<OT.Pseudonym> credentialList) {
+		public void setCredentialList(AsciiEntity<OT.User> credentialList) {
 			this.credentialList = credentialList;
 		}
 	}
@@ -595,16 +595,16 @@ public class MSG {
 
 	@XStreamAlias("createUserAccount")
 	public static class CreateUserAccount extends Request {
-		AsciiEntity<OT.Pseudonym> credentialList;
+		AsciiEntity<OT.User> credentialList;
 		OT.CredentialMap credentials;
 
 		// get/set
 
-		public AsciiEntity<OT.Pseudonym> getCredentialList() {
+		public AsciiEntity<OT.User> getCredentialList() {
 			return credentialList;
 		}
 
-		public void setCredentialList(AsciiEntity<OT.Pseudonym> credentialList) {
+		public void setCredentialList(AsciiEntity<OT.User> credentialList) {
 			this.credentialList = credentialList;
 		}
 
@@ -619,15 +619,15 @@ public class MSG {
 
 	@XStreamAlias("re_createUserAccount")
 	public static class CreateUserAccountResp extends Response {
-		AsciiEntity<OT.Pseudonym> nymfile;
+		AsciiEntity<OT.User> nymfile;
 		Message inReferenceTo;
 
 		//TODO more
-		public AsciiEntity<OT.Pseudonym> getNymfile() {
+		public AsciiEntity<OT.User> getNymfile() {
 			return nymfile;
 		}
 
-		public void setNymfile(AsciiEntity<OT.Pseudonym> nymfile) {
+		public void setNymfile(AsciiEntity<OT.User> nymfile) {
 			this.nymfile = nymfile;
 		}
 

@@ -1025,7 +1025,7 @@ public class OT {
 	}
 
 	@XStreamAlias("OTuser")
-	public static class Pseudonym implements XmlEntity {
+	public static class User implements XmlEntity {
 		@XStreamAsAttribute
 		String nymID;
 		@XStreamAsAttribute
@@ -1042,7 +1042,7 @@ public class OT {
 
 		@Override
 		public String toString() {
-			return "Pseudonym [nymID=" + nymID + ", transactionNums=" + transactionNums + ", issuedNums="
+			return "User [nymID=" + nymID + ", transactionNums=" + transactionNums + ", issuedNums="
 					+ issuedNums + "]";
 		}
 
@@ -1620,7 +1620,7 @@ public class OT {
 		String altLocation;
 
 		ArmoredString nymIDSource;
-		AsciiEntity<Pseudonym> credentialList;
+		AsciiEntity<User> credentialList;
 		CredentialMap credentials;
 
 		// get/set
@@ -1657,11 +1657,11 @@ public class OT {
 			this.nymIDSource = nymIDSource;
 		}
 
-		public AsciiEntity<Pseudonym> getCredentialList() {
+		public AsciiEntity<User> getCredentialList() {
 			return credentialList;
 		}
 
-		public void setCredentialList(AsciiEntity<Pseudonym> credentialList) {
+		public void setCredentialList(AsciiEntity<User> credentialList) {
 			this.credentialList = credentialList;
 		}
 

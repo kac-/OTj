@@ -240,7 +240,7 @@ public class EClient implements Closeable, ReqNumManager {
 		List<OT.TransactionReport> reports = makeOutboxReports(outboxLedger);
 
 		PrivateKey signingKey = client.getAccount().getCpairs().get("S").getPrivate();
-		OT.Pseudonym nums = makeNums();
+		OT.User nums = makeNums();
 		Long transactionNum = state.transactionNums.peek();
 
 		OT.Ledger ledger = from(acc);
@@ -336,7 +336,7 @@ public class EClient implements Closeable, ReqNumManager {
 			String nymboxHash = cachedNymbox.getNymboxHash();
 			long balanceAmount = assetAcount.getBalance().getAmount();
 			PrivateKey signingKey = client.getAccount().getCpairs().get("S").getPrivate();
-			OT.Pseudonym nums = makeNums();
+			OT.User nums = makeNums();
 			//System.out.println(json(nums));
 			Long transactionNum = state.transactionNums.peek();
 
@@ -572,7 +572,7 @@ public class EClient implements Closeable, ReqNumManager {
 		OT.Item item = from(otx);
 		item.type = OT.Item.Type.transactionStatement;
 		item.status = OT.Item.Status.request;
-		OT.Pseudonym nums = makeNums();
+		OT.User nums = makeNums();
 		//System.out.println(json(nums));
 		item.attachment = new OT.ArmoredString(Engines.xstream.toXML(nums));
 		//System.err.println(item.attachment.getUnarmored());
@@ -622,7 +622,7 @@ public class EClient implements Closeable, ReqNumManager {
 		pairs = account.getPairs();
 		cpairs = account.getCpairs();
 
-		OT.Pseudonym credentialList = new OT.Pseudonym();
+		OT.User credentialList = new OT.User();
 		OT.CredentialMap credentials = new OT.CredentialMap();
 
 		String nymIDSource = account.getNymIDSource();
@@ -674,7 +674,7 @@ public class EClient implements Closeable, ReqNumManager {
 		credentials.put(masterCredentialID, masterCredential);
 		credentials.put(keyCredentialID, keyCredential);
 
-		credentialList = new OT.Pseudonym();
+		credentialList = new OT.User();
 		credentialList.setNymID(nymID);
 		credentialList.setNymIDSource(new OT.ArmoredString(nymIDSource));
 		credentialList.setMasterCredential(new OT.CredentialIdentifier(masterCredentialID, null, true));
@@ -700,7 +700,7 @@ public class EClient implements Closeable, ReqNumManager {
 			}
 	}
 
-	private void takeNumsFrom(OT.Pseudonym nym) {
+	private void takeNumsFrom(OT.User nym) {
 		state.transactionNums.clear();
 		if (nym.getTransactionNums() != null)
 			state.transactionNums.addAll(nym.getTransactionNums());
@@ -709,8 +709,8 @@ public class EClient implements Closeable, ReqNumManager {
 			state.issuedNums.addAll(nym.getIssuedNums());
 	}
 
-	private OT.Pseudonym makeNums() {
-		OT.Pseudonym nums = new OT.Pseudonym();
+	private OT.User makeNums() {
+		OT.User nums = new OT.User();
 		nums.setTransactionNums(new OT.NumList(client.getServerID(), state.transactionNums));
 		nums.setIssuedNums(new OT.NumList(client.getServerID(), state.issuedNums));
 		return nums;
@@ -791,8 +791,8 @@ public class EClient implements Closeable, ReqNumManager {
 		return rep;
 	}
 
-	static OT.Pseudonym numsFrom(OT.Pseudonym nym) {
-		OT.Pseudonym nums = new OT.Pseudonym();
+	static OT.User numsFrom(OT.User nym) {
+		OT.User nums = new OT.User();
 		nums.setTransactionNums(new OT.NumList(nym.getTransactionNums()));
 		nums.setIssuedNums(new OT.NumList(nym.getIssuedNums()));
 		return nums;
