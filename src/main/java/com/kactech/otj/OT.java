@@ -51,6 +51,7 @@
 package com.kactech.otj;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1683,7 +1684,7 @@ public class OT {
 		String serverUserID;
 		long transactionNum;
 
-		String cachedKey;
+		SymmetricKey cachedKey;
 		@XStreamImplicit(itemFieldName = "assetType")
 		List<AssetType> assetTypes;
 		@XStreamImplicit(itemFieldName = "basketInfo")
@@ -1725,14 +1726,6 @@ public class OT {
 			this.transactionNum = transactionNum;
 		}
 
-		public String getCachedKey() {
-			return cachedKey;
-		}
-
-		public void setCachedKey(String cachedKey) {
-			this.cachedKey = cachedKey;
-		}
-
 		public List<AssetType> getAssetTypes() {
 			return assetTypes;
 		}
@@ -1755,6 +1748,14 @@ public class OT {
 
 		public void setAccountLists(List<AccountList> accountLists) {
 			this.accountLists = accountLists;
+		}
+
+		public SymmetricKey getCachedKey() {
+			return cachedKey;
+		}
+
+		public void setCachedKey(SymmetricKey cachedKey) {
+			this.cachedKey = cachedKey;
 		}
 
 	}
@@ -1880,6 +1881,75 @@ public class OT {
 		public void setAccountID(String accountID) {
 			this.accountID = accountID;
 		}
+
+	}
+
+	public static class SymmetricKey {
+		boolean isGenerated;
+		short keySizeInBits;
+		int iterationCount;
+		byte[] salt;
+		byte[] iv;
+		byte[] encKey;
+		byte[] hashCheck;
+
+		public static final Converter converter = new Converter() {
+
+			@Override
+			public boolean canConvert(Class type) {
+				return type == SymmetricKey.class;
+			}
+
+			@Override
+			public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+				SymmetricKey k = new SymmetricKey();
+				byte[] by = Utils.base64Decode(reader.getValue().trim());
+				try {
+					by = Utils.unpack(by, byte[].class);
+				} catch (PackerException e) {
+					throw new RuntimeException(e);
+				}
+				ByteBuffer bb = ByteBuffer.wrap(by);
+				bb.order(ByteOrder.BIG_ENDIAN);
+				k.isGenerated = bb.getShort() == 1;
+				k.keySizeInBits = bb.getShort();
+				k.iterationCount = bb.getInt();
+				int saltSize = bb.getInt();
+				k.salt = new byte[saltSize];
+				bb.get(k.salt);
+				int ivSize = bb.getInt();
+				k.iv = new byte[ivSize];
+				bb.get(k.iv);
+				int encKeySize = bb.getInt();
+				k.encKey = new byte[encKeySize];
+				bb.get(k.encKey);
+				int hashCheckSize = bb.getInt();
+				k.hashCheck = new byte[hashCheckSize];
+				bb.get(k.hashCheck);
+				return k;
+			}
+
+			@Override
+			public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+				SymmetricKey k = (SymmetricKey) source;
+				ByteBuffer bb = ByteBuffer.allocate(1024);
+				bb.order(ByteOrder.BIG_ENDIAN);
+				bb.putShort((short) (k.isGenerated ? 1 : 0));
+				bb.putShort(k.keySizeInBits);
+				bb.putInt(k.iterationCount);
+				bb.putInt(k.salt.length);
+				bb.put(k.salt);
+				bb.putInt(k.iv.length);
+				bb.put(k.iv);
+				bb.putInt(k.encKey.length);
+				bb.put(k.encKey);
+				bb.putInt(k.hashCheck.length);
+				bb.put(k.hashCheck);
+				bb.flip();
+				String str = Utils.base64EncodeString(Utils.pack(bb), true);
+				writer.setValue(str);
+			}
+		};
 
 	}
 

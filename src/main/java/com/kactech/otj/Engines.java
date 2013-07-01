@@ -248,6 +248,7 @@ public class Engines {
 		xstream.registerConverter(OT.PublicInfo.converter, XStream.PRIORITY_NORMAL);
 		xstream.registerConverter(OT.CredentialMap.converter, XStream.PRIORITY_NORMAL);
 		xstream.registerConverter(OT.NamedText.converter, XStream.PRIORITY_NORMAL);
+		xstream.registerConverter(OT.SymmetricKey.converter, XStream.PRIORITY_NORMAL);
 	}
 
 	// GSON
