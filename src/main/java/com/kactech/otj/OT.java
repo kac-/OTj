@@ -1521,6 +1521,14 @@ public class OT {
 			this.signer = signer;
 		}
 
+		public List<NamedText> getKeys() {
+			return keys;
+		}
+
+		public void setKeys(List<NamedText> keys) {
+			this.keys = keys;
+		}
+
 	}
 
 	public static class Entity {

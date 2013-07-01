@@ -480,12 +480,16 @@ public class Engines {
 
 			@Override
 			public void write(JsonWriter out, PublicKey value) throws IOException {
-				out.beginObject();
-				out.name("modulus");
-				out.value(((RSAPublicKey) value).getModulus());
-				out.name("publicExponent");
-				out.value(((RSAPublicKey) value).getPublicExponent());
-				out.endObject();
+				if (value == null)
+					out.nullValue();
+				else {
+					out.beginObject();
+					out.name("modulus");
+					out.value(((RSAPublicKey) value).getModulus());
+					out.name("publicExponent");
+					out.value(((RSAPublicKey) value).getPublicExponent());
+					out.endObject();
+				}
 			}
 		});
 
