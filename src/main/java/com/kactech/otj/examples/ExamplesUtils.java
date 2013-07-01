@@ -160,13 +160,20 @@ public class ExamplesUtils {
 		contractsURI
 				.put("tBy5mL14qSQXCJK7Uz3WlTOKRP9M0JZksA3Eg7EnnQ1",
 						"https://raw.github.com/FellowTraveler/Open-Transactions/master/sample-data/ot-sample-data/server_data/contracts/tBy5mL14qSQXCJK7Uz3WlTOKRP9M0JZksA3Eg7EnnQ1");
-		//vancouver bitcoin test server
+		// vancouver bitcoin test server
 		contractsURI.put("4x3jrBs4OZ8DN7rOTSbdqb8bdrG0O5sMFzArgZP7NXO",
 				"https://raw.github.com/stretch/OT-BitcoinServer/master/test-contracts/SERVER-vanbtc.otc");
+		// OT 8coin
+		contractsURI.put("8bPtJo8pmJ5eG992ccbfrl06DsDi6aqxr7fNhAK2PuW",
+				"https://raw.github.com/kactech/OTj/master/sample-data/SERVER-ot.8coin.org.otc");
 		// silver grams asset
 		contractsURI
 				.put("CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA",
 						"https://raw.github.com/FellowTraveler/Open-Transactions/master/sample-data/ot-sample-data/server_data/contracts/CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA");
+		// kactech LOC
+		contractsURI
+				.put("3SSQuTikpv7H9KlPNvnJ5ttmjqIwQc60ySvoXfYRBc8",
+						"https://github.com/kactech/OTj/blob/master/sample-data/ASSET-ktLOC.otc");
 
 	}
 
