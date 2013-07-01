@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.kactech.otj.MSG.AsciiEntity;
 import com.kactech.otj.Utils.PackerException;
 import com.kactech.otj.model.BasicSigningSupport;
 import com.kactech.otj.model.XmlEntity;
@@ -310,10 +311,9 @@ public class OT {
 		// Map<String,Nym> nyms
 		@XStreamAsAttribute
 		String version;
-		String entityShortName;
-		String entityLongName;
-		String entityEmail;
-		Map<String, String> conditions;
+		Entity entity;
+		@XStreamImplicit(itemFieldName = "condition")
+		List<Condition> conditions;
 
 		// get/set
 
@@ -349,35 +349,19 @@ public class OT {
 			this.version = version;
 		}
 
-		public String getEntityShortName() {
-			return entityShortName;
+		public Entity getEntity() {
+			return entity;
 		}
 
-		public void setEntityShortName(String entityShortName) {
-			this.entityShortName = entityShortName;
+		public void setEntity(Entity entity) {
+			this.entity = entity;
 		}
 
-		public String getEntityLongName() {
-			return entityLongName;
-		}
-
-		public void setEntityLongName(String entityLongName) {
-			this.entityLongName = entityLongName;
-		}
-
-		public String getEntityEmail() {
-			return entityEmail;
-		}
-
-		public void setEntityEmail(String entityEmail) {
-			this.entityEmail = entityEmail;
-		}
-
-		public Map<String, String> getConditions() {
+		public List<Condition> getConditions() {
 			return conditions;
 		}
 
-		public void setConditions(Map<String, String> conditions) {
+		public void setConditions(List<Condition> conditions) {
 			this.conditions = conditions;
 		}
 
@@ -1510,6 +1494,223 @@ public class OT {
 				writer.setValue('\n' + Utils.base64EncodeString(by, true));
 			}
 		};
+	}
+
+	@XStreamAlias("notaryProviderContract")
+	public static class NotaryProviderContract extends Contract {
+		NotaryServer notaryServer;
+		Signer signer;
+
+		// get/set
+
+		public NotaryServer getNotaryServer() {
+			return notaryServer;
+		}
+
+		public void setNotaryServer(NotaryServer notaryServer) {
+			this.notaryServer = notaryServer;
+		}
+
+		public Signer getSigner() {
+			return signer;
+		}
+
+		public void setSigner(Signer signer) {
+			this.signer = signer;
+		}
+
+	}
+
+	public static class Entity {
+		@XStreamAsAttribute
+		String shortname;
+		@XStreamAsAttribute
+		String longname;
+		@XStreamAsAttribute
+		String email;
+		@XStreamAsAttribute
+		String serverURL;
+
+		// get/set
+
+		public String getShortname() {
+			return shortname;
+		}
+
+		public void setShortname(String shortname) {
+			this.shortname = shortname;
+		}
+
+		public String getLongname() {
+			return longname;
+		}
+
+		public void setLongname(String longname) {
+			this.longname = longname;
+		}
+
+		public String getEmail() {
+			return email;
+		}
+
+		public void setEmail(String email) {
+			this.email = email;
+		}
+
+		public String getServerURL() {
+			return serverURL;
+		}
+
+		public void setServerURL(String serverURL) {
+			this.serverURL = serverURL;
+		}
+	}
+
+	public static class NotaryServer {
+		@XStreamAsAttribute
+		String hostname;
+		@XStreamAsAttribute
+		Integer port;
+		@XStreamAsAttribute
+		String URL;
+
+		// get/set
+
+		public String getHostname() {
+			return hostname;
+		}
+
+		public void setHostname(String hostname) {
+			this.hostname = hostname;
+		}
+
+		public Integer getPort() {
+			return port;
+		}
+
+		public void setPort(Integer port) {
+			this.port = port;
+		}
+
+		public String getURL() {
+			return URL;
+		}
+
+		public void setURL(String uRL) {
+			URL = uRL;
+		}
+	}
+
+	public static class Signer {
+		@XStreamAsAttribute
+		Boolean hasCredentials;
+		@XStreamAsAttribute
+		String nymID;
+		@XStreamAsAttribute
+		String altLocation;
+
+		ArmoredString nymIDSource;
+		AsciiEntity<Pseudonym> credentialList;
+		CredentialMap credentials;
+
+		// get/set
+
+		public Boolean getHasCredentials() {
+			return hasCredentials;
+		}
+
+		public void setHasCredentials(Boolean hasCredentials) {
+			this.hasCredentials = hasCredentials;
+		}
+
+		public String getNymID() {
+			return nymID;
+		}
+
+		public void setNymID(String nymID) {
+			this.nymID = nymID;
+		}
+
+		public String getAltLocation() {
+			return altLocation;
+		}
+
+		public void setAltLocation(String altLocation) {
+			this.altLocation = altLocation;
+		}
+
+		public ArmoredString getNymIDSource() {
+			return nymIDSource;
+		}
+
+		public void setNymIDSource(ArmoredString nymIDSource) {
+			this.nymIDSource = nymIDSource;
+		}
+
+		public AsciiEntity<Pseudonym> getCredentialList() {
+			return credentialList;
+		}
+
+		public void setCredentialList(AsciiEntity<Pseudonym> credentialList) {
+			this.credentialList = credentialList;
+		}
+
+		public CredentialMap getCredentials() {
+			return credentials;
+		}
+
+		public void setCredentials(CredentialMap credentials) {
+			this.credentials = credentials;
+		}
+
+	}
+
+	@XStreamAlias("condition")
+	public static class Condition {
+		@XStreamAsAttribute
+		String name;
+		String text;
+
+		public static final Converter converter = new Converter() {
+
+			@Override
+			public boolean canConvert(Class type) {
+				return type == Condition.class;
+			}
+
+			@Override
+			public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+				Condition c = new Condition();
+				c.name = reader.getAttribute("name");
+				c.text = reader.getValue().trim();
+				return c;
+			}
+
+			@Override
+			public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+				writer.addAttribute("name", ((Condition) source).name);
+				writer.setValue(((Condition) source).text + '\n');
+			}
+		};
+
+		// get/set
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getText() {
+			return text;
+		}
+
+		public void setText(String text) {
+			this.text = text;
+		}
+
 	}
 
 	public static class ArmoredString {
