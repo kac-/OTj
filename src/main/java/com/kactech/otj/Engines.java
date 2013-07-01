@@ -247,7 +247,7 @@ public class Engines {
 		xstream.registerConverter(OT.ArmoredData.converter, XStream.PRIORITY_NORMAL);
 		xstream.registerConverter(OT.PublicInfo.converter, XStream.PRIORITY_NORMAL);
 		xstream.registerConverter(OT.CredentialMap.converter, XStream.PRIORITY_NORMAL);
-		xstream.registerConverter(OT.Condition.converter, XStream.PRIORITY_NORMAL);
+		xstream.registerConverter(OT.NamedText.converter, XStream.PRIORITY_NORMAL);
 	}
 
 	// GSON

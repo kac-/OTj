@@ -313,7 +313,7 @@ public class OT {
 		String version;
 		Entity entity;
 		@XStreamImplicit(itemFieldName = "condition")
-		List<Condition> conditions;
+		List<NamedText> conditions;
 
 		// get/set
 
@@ -357,11 +357,11 @@ public class OT {
 			this.entity = entity;
 		}
 
-		public List<Condition> getConditions() {
+		public List<NamedText> getConditions() {
 			return conditions;
 		}
 
-		public void setConditions(List<Condition> conditions) {
+		public void setConditions(List<NamedText> conditions) {
 			this.conditions = conditions;
 		}
 
@@ -1500,6 +1500,8 @@ public class OT {
 	public static class NotaryProviderContract extends Contract {
 		NotaryServer notaryServer;
 		Signer signer;
+		@XStreamImplicit(itemFieldName = "key")
+		List<NamedText> keys;
 
 		// get/set
 
@@ -1665,8 +1667,7 @@ public class OT {
 
 	}
 
-	@XStreamAlias("condition")
-	public static class Condition {
+	public static class NamedText {
 		@XStreamAsAttribute
 		String name;
 		String text;
@@ -1675,12 +1676,12 @@ public class OT {
 
 			@Override
 			public boolean canConvert(Class type) {
-				return type == Condition.class;
+				return type == NamedText.class;
 			}
 
 			@Override
 			public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-				Condition c = new Condition();
+				NamedText c = new NamedText();
 				c.name = reader.getAttribute("name");
 				c.text = reader.getValue().trim();
 				return c;
@@ -1688,8 +1689,8 @@ public class OT {
 
 			@Override
 			public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-				writer.addAttribute("name", ((Condition) source).name);
-				writer.setValue(((Condition) source).text + '\n');
+				writer.addAttribute("name", ((NamedText) source).name);
+				writer.setValue(((NamedText) source).text + '\n');
 			}
 		};
 
