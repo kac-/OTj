@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<notaryProviderContract version="2.0">
+    
+<entity shortname="OT 8coin"
+longname="OT 8coin test server"
+email="pepe.kopec@gmail.com"
+serverURL="ot.8coin.org"/>
+    
+<notaryServer hostname="ot.8coin.org"
+port="7085"
+URL="ot.8coin.org"/>
+
+    
+</notaryProviderContract>

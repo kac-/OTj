@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<digitalAssetContract version="2.0">
+    
+<entity shortname="kactechLOC"
+longname="kactech lines of code"
+email="pepe.kopec@gmail.com"/>
+
+<issue company="kactech private"
+email="pepe.kopec@gmail.com"
+contractUrl="somewhere.com/kactechLTC"
+type="currency"/>
+    
+<currency name="kactechLOC" tla="ktLTC" symbol="ktLOC"
+type="decimal" factor="1" decimal_power="0" fraction=""/>
+    
+<!-- CONDITIONS -->
+    
+<condition name="backing">
+  good will backing, highly inflative and YOU https://blockchain.info/address/1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp
+</condition>
+    
+    
+</digitalAssetContract>
