@@ -1199,6 +1199,8 @@ public class OT {
 		String nymID;
 		ArmoredString nymIDSource;
 		PublicContents publicContents;
+		MasterCredential publicCredential;
+		PrivateContents privateContents;
 
 		// get/set
 
@@ -1225,6 +1227,23 @@ public class OT {
 		public void setPublicContents(PublicContents publicContents) {
 			this.publicContents = publicContents;
 		}
+
+		public MasterCredential getPublicCredential() {
+			return publicCredential;
+		}
+
+		public void setPublicCredential(MasterCredential publicCredential) {
+			this.publicCredential = publicCredential;
+		}
+
+		public PrivateContents getPrivateContents() {
+			return privateContents;
+		}
+
+		public void setPrivateContents(PrivateContents privateContents) {
+			this.privateContents = privateContents;
+		}
+
 	}
 
 	@XStreamAlias("keyCredential")
@@ -1448,6 +1467,32 @@ public class OT {
 				writer.setValue('\n' + AsciiA.setString(((PublicInfo) source).value));
 			}
 		};
+	}
+
+	public static class PrivateContents {
+		@XStreamAsAttribute
+		Integer count;
+		@XStreamImplicit(itemFieldName = "privateInfo")
+		List<PublicInfo> privateInfos;
+
+		// get/set
+
+		public Integer getCount() {
+			return count;
+		}
+
+		public void setCount(Integer count) {
+			this.count = count;
+		}
+
+		public List<PublicInfo> getPrivateInfos() {
+			return privateInfos;
+		}
+
+		public void setPrivateInfos(List<PublicInfo> privateInfos) {
+			this.privateInfos = privateInfos;
+		}
+
 	}
 
 	public static class CredentialMap extends HashMap<String, MasterCredential> {
@@ -1950,6 +1995,64 @@ public class OT {
 				writer.setValue(str);
 			}
 		};
+
+		// get/set
+
+		public boolean isGenerated() {
+			return isGenerated;
+		}
+
+		public void setGenerated(boolean isGenerated) {
+			this.isGenerated = isGenerated;
+		}
+
+		public short getKeySizeInBits() {
+			return keySizeInBits;
+		}
+
+		public void setKeySizeInBits(short keySizeInBits) {
+			this.keySizeInBits = keySizeInBits;
+		}
+
+		public int getIterationCount() {
+			return iterationCount;
+		}
+
+		public void setIterationCount(int iterationCount) {
+			this.iterationCount = iterationCount;
+		}
+
+		public byte[] getSalt() {
+			return salt;
+		}
+
+		public void setSalt(byte[] salt) {
+			this.salt = salt;
+		}
+
+		public byte[] getIv() {
+			return iv;
+		}
+
+		public void setIv(byte[] iv) {
+			this.iv = iv;
+		}
+
+		public byte[] getEncKey() {
+			return encKey;
+		}
+
+		public void setEncKey(byte[] encKey) {
+			this.encKey = encKey;
+		}
+
+		public byte[] getHashCheck() {
+			return hashCheck;
+		}
+
+		public void setHashCheck(byte[] hashCheck) {
+			this.hashCheck = hashCheck;
+		}
 
 	}
 
