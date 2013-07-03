@@ -56,20 +56,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.Security;
-import java.security.spec.RSAPublicKeySpec;
+import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -80,17 +81,21 @@ import org.slf4j.LoggerFactory;
 import com.kactech.otj.Client;
 import com.kactech.otj.EClient;
 import com.kactech.otj.Engines;
+import com.kactech.otj.MSG;
 import com.kactech.otj.OT;
 import com.kactech.otj.Utils;
+import com.kactech.otj.examples.App_otj;
+import com.kactech.otj.examples.ExamplesUtils;
 import com.kactech.otj.log4j.MemoryAppender;
-import com.kactech.otj.model.BasicConnectionInfo;
 
 @SuppressWarnings("serial")
 public class OTjAlpha extends JPanel implements ActionListener {
 	static final Logger logger = LoggerFactory.getLogger(OTjAlpha.class);
 	EClient client;
-	ThreeField asset = new ThreeField(4, "asset", new URLButton("silver",
-			"https://github.com/FellowTraveler/Open-Transactions/blob/master/sample-data/sample-contracts/silver.otc"));
+	ThreeField server = new ThreeField(4, "server", new URLButton("OT 8coin.org",
+			"https://raw.github.com/kactech/OTj/master/sample-data/SERVER-ot.8coin.org.otc"));
+	ThreeField asset = new ThreeField(4, "asset", new URLButton("ktLOC",
+			"https://raw.github.com/kactech/OTj/master/sample-data/ASSET-ktLOC.otc"));
 	JTextField balance = new JTextField(4);
 	JButton reload = new JButton("reload");
 	CopyField nymID = new CopyField("nymID", true, 4);
@@ -101,6 +106,8 @@ public class OTjAlpha extends JPanel implements ActionListener {
 	JButton reloadNym = new JButton("reload Nym");
 	JButton donate = new URLButton("donate OTj", "https://blockchain.info/address/1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp");
 	URLButton sources = new URLButton("sources", "https://github.com/kactech/OTj");
+	JButton message = new JButton("message");
+	SendMessageDialog messageDialog = new SendMessageDialog(null);
 
 	public OTjAlpha(EClient client) {
 		this.client = client;
@@ -110,6 +117,8 @@ public class OTjAlpha extends JPanel implements ActionListener {
 
 		Box h;
 		JLabel l;
+
+		box.add(server);
 
 		asset.setText(client.getAssetType());
 		box.add(asset);
@@ -139,7 +148,11 @@ public class OTjAlpha extends JPanel implements ActionListener {
 		h.setMaximumSize(h.getPreferredSize());
 		box.add(h);
 
-		box.add(reloadNym);
+		h = Box.createHorizontalBox();
+		h.setAlignmentX(LEFT_ALIGNMENT);
+		h.add(message);
+		h.add(reloadNym);
+		box.add(h);
 
 		h = Box.createHorizontalBox();
 		h.setAlignmentX(LEFT_ALIGNMENT);
@@ -180,7 +193,16 @@ public class OTjAlpha extends JPanel implements ActionListener {
 		reload.addActionListener(this);
 		send.addActionListener(this);
 		reloadNym.addActionListener(this);
+		message.addActionListener(this);
+		messageDialog.getSend().addActionListener(this);
 		setButtonsEnabled(false);
+
+		messageDialog.setModal(false);
+		messageDialog.setUndecorated(false);
+		messageDialog.setResizable(true);
+		messageDialog.pack();
+		messageDialog.setAlwaysOnTop(true);
+		messageDialog.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 	}
 
 	public void init() {
@@ -191,6 +213,7 @@ public class OTjAlpha extends JPanel implements ActionListener {
 			public void run() {
 				try {
 					client.init();
+					server.setText(client.getClient().getServerID());
 					Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 						@Override
 						public void run() {
@@ -234,9 +257,9 @@ public class OTjAlpha extends JPanel implements ActionListener {
 	}
 
 	void process(Object src) throws Exception {
+
 		if (src == reload) {
 			logger.info("reload");
-			client.processNymbox();
 			client.processInbox();
 			OT.Account acc;
 			acc = client.getAccount();
@@ -261,6 +284,68 @@ public class OTjAlpha extends JPanel implements ActionListener {
 		} else if (src == reloadNym) {
 			logger.info("reload Nym");
 			client.reloadState();
+		} else if (src == message) {
+			messageDialog.setVisible(true);
+		} else if (src == messageDialog.getSend()) {
+			String nymID = messageDialog.getSendTo().trim();
+			if (!App_otj.mayBeValid(nymID)) {
+				String msg = "invalid recipient nymID";
+				logger.error(msg);
+				JOptionPane.showMessageDialog(this, msg);
+				return;
+			}
+			String txt = messageDialog.buildText();
+			if (txt.isEmpty()) {
+				String msg = "empty message";
+				logger.error(msg);
+				JOptionPane.showMessageDialog(this, msg);
+				return;
+			}
+			MSG.CheckUserResp cu = client.getClient().checkUser(nymID);
+			if (!cu.getSuccess()) {
+				String msg = "recipient not found";
+				logger.error(msg);
+				JOptionPane.showMessageDialog(this, msg);
+				return;
+			}
+			PublicKey recipientPublicKey = null;
+			if (cu.getHasCredentials()) {
+				OT.User credentialList = cu.getCredentialList().getEntity();
+				//String nymIDSource = credentialList.getNymIDSource().getRaw();
+				//recipientPublicKey = (RSAPublicKey) Utils.fromIDSource(nymIDSource);
+				String keyID = credentialList.getKeyCredential().getID();
+				String str = cu.getCredentials().get(keyID);
+				OT.KeyCredential cred = (OT.KeyCredential) Engines.parse(str);
+				//System.out.println(Engines.gson.toJson(cred));
+				List<OT.KeyValue> list = cred.getMasterSigned().getPublicContents().getPublicInfos();
+				for (OT.KeyValue kv : list) {
+					if (kv.getKey().equals("E"))
+						recipientPublicKey = Utils.fromRawPublicInfo(kv.getValue(), false);
+				}
+				if (recipientPublicKey == null) {
+					String msg = "recipient encryption key not found";
+					logger.error(msg);
+					JOptionPane.showMessageDialog(this, msg);
+					return;
+				}
+			} else {
+				String str = Utils.unarmor(cu.getNymPublicKey(), true);
+				byte[] packed = Utils.base64Decode(str);
+				str = Utils.unpack(packed, String.class);
+				recipientPublicKey = Utils.pemReadRSAPublicKey(str);
+			}
+			MSG.SendUserMessageResp resp = client.getClient().sendUserMessage(txt,
+					nymID, recipientPublicKey);
+			if (resp.getSuccess()) {
+				logger.info("message sent");
+				messageDialog.setVisible(false);
+			}
+			else {
+				String msg = "message not sent";
+				logger.error(msg);
+				JOptionPane.showMessageDialog(this, msg);
+				return;
+			}
 		}
 	}
 
@@ -268,6 +353,8 @@ public class OTjAlpha extends JPanel implements ActionListener {
 		reload.setEnabled(enabled);
 		send.setEnabled(enabled);
 		reloadNym.setEnabled(enabled);
+		message.setEnabled(enabled);
+		messageDialog.getSend().setEnabled(enabled);
 	}
 
 	static void createAndShow() {
@@ -296,23 +383,10 @@ public class OTjAlpha extends JPanel implements ActionListener {
 		});
 	}
 
-	public static BasicConnectionInfo localhostServerInfo() {
-		try {
-			String serverKeyString = "{\"modulus\":157308124954637849769808055227589301287752744825558530150220825924565496309952110169467763525063683140481597445838436176231389850954363355832747286996253525968666484844394188835285816520152462516072618852511394863800122669965310355610221431146947161206966593783544166481213230593202598098997296223206388439283,\"publicExponent\":65537}";
-			PublicKey serverPublicKey = KeyFactory.getInstance("RSA").generatePublic(
-					Engines.gson.fromJson(serverKeyString, RSAPublicKeySpec.class));
-			String serverID = "tBy5mL14qSQXCJK7Uz3WlTOKRP9M0JZksA3Eg7EnnQ1";
-			String serverEndpoint = "tcp://localhost:7085";
-
-			return new BasicConnectionInfo(serverID, serverPublicKey, serverEndpoint);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	public static EClient buildClient() {
-		EClient client = new EClient(new File("client"), localhostServerInfo());
-		client.setAssetType("CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA");//silver grams
+		EClient client = new EClient(new File("alpha_client"), ExamplesUtils.findServer("OT 8coin"));
+		//client.setAssetType("CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA");//silver grams
+		client.setAssetType("3SSQuTikpv7H9KlPNvnJ5ttmjqIwQc60ySvoXfYRBc8");//kactechLOC
 		return client;
 	}
 }

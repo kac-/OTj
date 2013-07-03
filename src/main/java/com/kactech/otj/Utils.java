@@ -442,7 +442,7 @@ public class Utils {
 	/*
 	 * seal
 	 */
-	public static byte[] seal(String msg, String nymID, PublicKey nymKey)
+	public static ByteBuffer seal(String msg, String nymID, PublicKey nymKey)
 			throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException,
 			BadPaddingException {
 		SecureRandom random = new SecureRandom();
@@ -454,7 +454,7 @@ public class Utils {
 				, new IvParameterSpec(vector));
 	}
 
-	public static byte[] seal(String msg, String nymID, PublicKey nymKey, SecretKeySpec aesSecret,
+	public static ByteBuffer seal(String msg, String nymID, PublicKey nymKey, SecretKeySpec aesSecret,
 			IvParameterSpec vector)
 			throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException,
 			BadPaddingException {
@@ -489,6 +489,22 @@ public class Utils {
 		buff.put(encrypted);
 		buff.flip();
 
+		return buff;
+	}
+
+	public static byte[] sealToB64(String msg, String nymID, PublicKey nymKey)
+			throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException,
+			BadPaddingException {
+
+		ByteBuffer buff = seal(msg, nymID, nymKey);
+		return base64Encode(pack(buff), true);
+	}
+
+	public static byte[] sealToB64(String msg, String nymID, PublicKey nymKey, SecretKeySpec aesSecret,
+			IvParameterSpec vector)
+			throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException,
+			BadPaddingException {
+		ByteBuffer buff = seal(msg, nymID, nymKey, aesSecret, vector);
 		return base64Encode(pack(buff), true);
 	}
 

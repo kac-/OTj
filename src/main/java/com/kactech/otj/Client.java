@@ -52,6 +52,7 @@ package com.kactech.otj;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -94,7 +95,7 @@ public class Client implements Closeable {
 
 		byte[] bytes;
 		try {
-			bytes = Utils.seal(signed, serverNymID, serverPublicKey);
+			bytes = Utils.sealToB64(signed, serverNymID, serverPublicKey);
 		} catch (Exception e) {
 			throw new RuntimeException("sealing message", e);
 		}
@@ -300,14 +301,17 @@ public class Client implements Closeable {
 	}
 
 	public MSG.SendUserMessageResp sendUserMessage(String message, String recipientNymID,
-			RSAPublicKey recipientPublicKey) {
+			PublicKey recipientPublicKey) {
 		MSG.SendUserMessage req = new MSG.SendUserMessage();
 		req.setNymID(account.getNymID());
 		req.setServerID(serverID);
 		req.setNymID2(recipientNymID);
 		req.setRequestNum(getRequest());
 		try {
-			req.setMessagePayload(new OT.ArmoredData(Utils.seal(message, recipientNymID, recipientPublicKey)));
+			ByteBuffer buff = Utils.seal(message, recipientNymID, recipientPublicKey);
+			byte[] enc = new byte[buff.remaining()];
+			buff.get(enc);
+			req.setMessagePayload(new OT.ArmoredData(enc));
 		} catch (Exception e) {
 			throw new RuntimeException();
 		}
