@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -227,8 +228,9 @@ public class Client implements Closeable {
 		masterCredential.setNymID(nymID);
 		masterCredential.setNymIDSource(new OT.ArmoredString(nymIDSource));
 		OT.PublicContents publicContents = new OT.PublicContents();
+		publicContents.setPublicInfos(new ArrayList<OT.KeyValue>());
 		for (Entry<String, String> e : getAccount().getSources().entrySet())
-			publicContents.getPublicInfos().put(e.getKey(), new OT.PublicInfo(e.getKey(), e.getValue()));
+			publicContents.getPublicInfos().add(new OT.KeyValue(e.getKey(), e.getValue()));
 		publicContents.setCount(3);
 
 		masterCredential.setPublicContents(publicContents);
@@ -245,8 +247,9 @@ public class Client implements Closeable {
 		masterSigned.setMasterCredentialID(masterCredentialID);
 		masterSigned.setMasterPublic(masterCredential);
 		publicContents = new OT.PublicContents();
+		publicContents.setPublicInfos(new ArrayList<OT.KeyValue>());
 		for (Entry<String, String> e : getAccount().getCsources().entrySet())
-			publicContents.getPublicInfos().put(e.getKey(), new OT.PublicInfo(e.getKey(), e.getValue()));
+			publicContents.getPublicInfos().add(new OT.KeyValue(e.getKey(), e.getValue()));
 		publicContents.setCount(3);
 
 		masterSigned.setPublicContents(publicContents);

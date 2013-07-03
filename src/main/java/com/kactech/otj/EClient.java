@@ -558,7 +558,7 @@ public class EClient implements Closeable, ReqNumManager {
 					item.inReferenceTo = nr.transactionNum;
 					item.status = OT.Item.Status.request;
 					item.type = OT.Item.Type.acceptNotice;
-					logger.info("we've got new tx# from server");
+					logger.info("accepted new tx#");
 					addIfNotThere(state.transactionNums, nr.totalListOfNumbers);
 					addIfNotThere(state.issuedNums, nr.totalListOfNumbers);
 					item.totalListOfNumbers = nr.totalListOfNumbers;
@@ -633,8 +633,9 @@ public class EClient implements Closeable, ReqNumManager {
 		masterCredential.setNymID(nymID);
 		masterCredential.setNymIDSource(new OT.ArmoredString(nymIDSource));
 		OT.PublicContents publicContents = new OT.PublicContents();
+		publicContents.setPublicInfos(new ArrayList<OT.KeyValue>());
 		for (Entry<String, String> e : account.getSources().entrySet())
-			publicContents.getPublicInfos().put(e.getKey(), new OT.PublicInfo(e.getKey(), e.getValue()));
+			publicContents.getPublicInfos().add(new OT.KeyValue(e.getKey(), e.getValue()));
 		publicContents.setCount(3);
 
 		masterCredential.setPublicContents(publicContents);
@@ -651,8 +652,9 @@ public class EClient implements Closeable, ReqNumManager {
 		masterSigned.setMasterCredentialID(masterCredentialID);
 		masterSigned.setMasterPublic(masterCredential);
 		publicContents = new OT.PublicContents();
+		publicContents.setPublicInfos(new ArrayList<OT.KeyValue>());
 		for (Entry<String, String> e : account.getCsources().entrySet())
-			publicContents.getPublicInfos().put(e.getKey(), new OT.PublicInfo(e.getKey(), e.getValue()));
+			publicContents.getPublicInfos().add(new OT.KeyValue(e.getKey(), e.getValue()));
 		publicContents.setCount(3);
 
 		masterSigned.setPublicContents(publicContents);

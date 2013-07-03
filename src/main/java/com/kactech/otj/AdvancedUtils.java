@@ -50,7 +50,6 @@
  ******************************************************************************/
 package com.kactech.otj;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.security.spec.KeySpec;
@@ -74,7 +73,10 @@ public class AdvancedUtils {
 			for (OT.MasterCredential c : notary.getSigner().getCredentials().values()) {
 				if (c instanceof OT.KeyCredential) {
 					OT.PublicContents pub = ((OT.KeyCredential) c).getMasterSigned().getPublicContents();
-					String v = pub.getPublicInfos().get("E").getValue();
+					String v = null;
+					for (OT.KeyValue pubi : pub.getPublicInfos())
+						if (pubi.getKey().equals("E"))
+							v = pubi.getValue();
 					publicKey = Utils.fromRawPublicInfo(v, false);
 					break;
 				}

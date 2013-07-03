@@ -245,7 +245,7 @@ public class Engines {
 		xstream.registerConverter(OT.NumListAttribute.converter, XStream.PRIORITY_NORMAL);
 		xstream.registerConverter(OT.Version.converter, XStream.PRIORITY_NORMAL);
 		xstream.registerConverter(OT.ArmoredData.converter, XStream.PRIORITY_NORMAL);
-		xstream.registerConverter(OT.PublicInfo.converter, XStream.PRIORITY_NORMAL);
+		xstream.registerConverter(OT.KeyValue.converter, XStream.PRIORITY_NORMAL);
 		xstream.registerConverter(OT.CredentialMap.converter, XStream.PRIORITY_NORMAL);
 		xstream.registerConverter(OT.NamedText.converter, XStream.PRIORITY_NORMAL);
 		xstream.registerConverter(OT.SymmetricKey.converter, XStream.PRIORITY_NORMAL);
@@ -356,14 +356,14 @@ public class Engines {
 			}
 		});
 		// print PublicInfo only as its value
-		builder.registerTypeAdapter(OT.PublicInfo.class, new TypeAdapter<OT.PublicInfo>() {
+		builder.registerTypeAdapter(OT.KeyValue.class, new TypeAdapter<OT.KeyValue>() {
 			@Override
-			public OT.PublicInfo read(JsonReader in) throws IOException {
+			public OT.KeyValue read(JsonReader in) throws IOException {
 				throw new UnsupportedOperationException();
 			}
 
 			@Override
-			public void write(JsonWriter out, OT.PublicInfo value) throws IOException {
+			public void write(JsonWriter out, OT.KeyValue value) throws IOException {
 				out.value(value.getValue());
 			}
 		});
@@ -381,27 +381,6 @@ public class Engines {
 			}
 		});
 
-		// print contents as simple map TODO remove Identifier type adapter
-		builder.registerTypeAdapter(OT.PublicContents.class, new TypeAdapter<OT.PublicContents>() {
-			@Override
-			public OT.PublicContents read(JsonReader in) throws IOException {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public void write(JsonWriter out, OT.PublicContents value) throws IOException {
-				if (value == null || value.getPublicInfos() == null)
-					out.nullValue();
-				else {
-					out.beginObject();
-					for (java.util.Map.Entry<String, OT.PublicInfo> e : value.getPublicInfos().entrySet()) {
-						out.name(e.getKey());
-						out.value(e.getValue().getValue());
-					}
-					out.endObject();
-				}
-			};
-		});
 		// ah
 		builder.registerTypeAdapter(OT.Version.class, new TypeAdapter<OT.Version>() {
 			@Override

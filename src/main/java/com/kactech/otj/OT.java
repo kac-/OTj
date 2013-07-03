@@ -1392,13 +1392,9 @@ public class OT {
 	@XStreamAlias("publicContents")
 	public static class PublicContents {
 		@XStreamAsAttribute
-		Integer count;//TODO make it implicit
-		@XStreamImplicit(itemFieldName = "publicInfo", keyFieldName = "key")
-		Map<String, PublicInfo> publicInfos = new HashMap<String, OT.PublicInfo>();
-
-		public void put(PublicInfo info) {
-			publicInfos.put(info.getKey(), info);
-		}
+		Integer count;
+		@XStreamImplicit(itemFieldName = "publicInfo")
+		List<KeyValue> publicInfos;
 
 		// get/set
 
@@ -1410,26 +1406,25 @@ public class OT {
 			this.count = count;
 		}
 
-		public Map<String, PublicInfo> getPublicInfos() {
+		public List<KeyValue> getPublicInfos() {
 			return publicInfos;
 		}
 
-		public void setPublicInfos(Map<String, PublicInfo> publicInfos) {
+		public void setPublicInfos(List<KeyValue> publicInfos) {
 			this.publicInfos = publicInfos;
 		}
+
 	}
 
-	@XStreamAlias("publicInfo")
-	public static class PublicInfo {
+	public static class KeyValue {
 		@XStreamAsAttribute
-		@GsonExclude
 		String key;
 		String value;
 
-		public PublicInfo() {
+		public KeyValue() {
 		}
 
-		public PublicInfo(String key, String value) {
+		public KeyValue(String key, String value) {
 			super();
 			this.key = key;
 			this.value = value;
@@ -1459,12 +1454,12 @@ public class OT {
 
 			@Override
 			public boolean canConvert(Class type) {
-				return type == PublicInfo.class;
+				return type == KeyValue.class;
 			}
 
 			@Override
 			public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-				PublicInfo info = new PublicInfo();
+				KeyValue info = new KeyValue();
 				info.key = reader.getAttribute("key");
 				info.value = AsciiA.getString(reader.getValue().trim());
 				return info;
@@ -1472,8 +1467,8 @@ public class OT {
 
 			@Override
 			public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-				writer.addAttribute("key", ((PublicInfo) source).key);
-				writer.setValue('\n' + AsciiA.setString(((PublicInfo) source).value));
+				writer.addAttribute("key", ((KeyValue) source).key);
+				writer.setValue('\n' + AsciiA.setString(((KeyValue) source).value));
 			}
 		};
 	}
@@ -1482,7 +1477,7 @@ public class OT {
 		@XStreamAsAttribute
 		Integer count;
 		@XStreamImplicit(itemFieldName = "privateInfo")
-		List<PublicInfo> privateInfos;
+		List<KeyValue> privateInfos;
 
 		// get/set
 
@@ -1494,11 +1489,11 @@ public class OT {
 			this.count = count;
 		}
 
-		public List<PublicInfo> getPrivateInfos() {
+		public List<KeyValue> getPrivateInfos() {
 			return privateInfos;
 		}
 
-		public void setPrivateInfos(List<PublicInfo> privateInfos) {
+		public void setPrivateInfos(List<KeyValue> privateInfos) {
 			this.privateInfos = privateInfos;
 		}
 
