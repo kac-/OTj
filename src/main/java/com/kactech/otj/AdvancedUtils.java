@@ -50,8 +50,16 @@
  ******************************************************************************/
 package com.kactech.otj;
 
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.security.spec.KeySpec;
+
+import javax.crypto.Cipher;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import com.kactech.otj.model.BasicConnectionInfo;
 
@@ -82,5 +90,29 @@ public class AdvancedUtils {
 			}
 		}
 		return new BasicConnectionInfo(id, publicKey, endpoint, nymID);
+	}
+
+	public static char[] getMasterPassword(OT.SymmetricKey cachedKey, String password) {
+		SecretKeyFactory f;
+		try {
+			f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+
+			KeySpec spec;
+			int derivedKeyLength = 128;
+			spec = new PBEKeySpec((password + '\0').toCharArray(), cachedKey.getSalt(), cachedKey.getIterationCount(),
+					derivedKeyLength);
+			byte[] derivedKey = f.generateSecret(spec).getEncoded();
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+			cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(derivedKey, "AES"),
+					new IvParameterSpec(cachedKey.getIv()));
+
+			final byte[] decKey = cipher.doFinal(cachedKey.getEncKey());
+			char[] decChars = new char[decKey.length];
+			for (int i = 0; i < decChars.length; i++)
+				decChars[i] = (char) (0xff & decKey[i]);
+			return decChars;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
