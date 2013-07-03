@@ -8,9 +8,7 @@ Low-level client-side library for [Open Transactions](https://github.com/FellowT
 
 [DirtyClientExample](/src/main/java/com/kactech/otj/examples/DirtyClientExample.java) - quick and dirty simple client implementation, sending user messages here!
 
-[OTjAlpha](/src/main/java/com/kactech/otj/examples/gui/OTjAlpha.java) simple transaction client, creates 'Silver grams' account, register it and let send and receive grams via localhost test server.
-Precompiled 0.89.g-4 jar can be downloaded [here](https://dl.dropboxusercontent.com/u/24177759/my_apps/OTj-app-0.89.g-4.jar).
-App usage [here](OTjAlpha.md)
+[OTjAlpha](/src/main/java/com/kactech/otj/examples/gui/OTjAlpha.java) GUI client for *OT 8coin.org* server, account transfers and mail support so you can easily use *OTjFaucet*- read [more](OTjAlpha.md). Precompiled 0.89.g-5 jar can be downloaded [here](https://dl.dropboxusercontent.com/u/24177759/my_apps/OTj-app-0.89.g-5.jar)
 
 [otj app](otj.md) transfer tool with command-line syntax compatible to [opentxs](https://github.com/FellowTraveler/Open-Transactions/wiki/opentxs)
 
@@ -22,5 +20,5 @@ Special thanks to:
  * [FellowTraveler](https://github.com/FellowTraveler)
 
 --
-BTC donations for OTj project: 1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp
+BTC donations for OTj project: [1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp](https://blockchain.info/address/1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp) - **THANKS!!!**
 

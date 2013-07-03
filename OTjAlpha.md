@@ -1,12 +1,11 @@
 OTjAlpha
 ========
 
-At first startup it creates local user account data(keys) in **./client** folder and register it at localhost server.
+At first startup it creates local user account data(keys) in ~~**./client**~~`./alpha_client` folder and register it at localhost server.
 
-Than you can receive silver grams, just send grams to its **accountID** and click **refresh** near the **balance**.
+Than you can receive ~~silver grams~~ kactechLOCs from **OTjFaucet**, go to [#opentransactions](http://webchat.freenode.net/?channels=#opentransactions) and call `OTjFaucet:` for details.
 
-~~First time you **refresh** after making deposit you'll see **WARN- balance rejected**, I haven't fixe dit yet, you need to click **refresh Nym** and **refresh**- than balance should update and next time just **refresh** will be needed.~~
-fixed by [5e1885aed](https://github.com/kactech/OTj/commit/5e1885aed50bcda479f86c0928f1386dcaa7f40d)
+You can also send mails to other nyms!
 
-
+**REMEMBER** if you want to run multiple instances of **OTjAlpha** on one machine- run them in separate directories!
 
