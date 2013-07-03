@@ -51,8 +51,10 @@
 package com.kactech.otj.tools.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -89,13 +91,13 @@ public class DeepDecoderGUI extends JPanel implements ActionListener {
 		String str = text.getText();
 
 		try {
-			StringWriter w = new StringWriter();
-			DeepDecoder dd = new DeepDecoder(new PrintWriter(w), "   ");
+			File file = File.createTempFile("ddgui", ".xml");
+			file.deleteOnExit();
+			DeepDecoder dd = new DeepDecoder(new PrintWriter(file), "   ");
 			dd.process(str);
 			dd.flush();
 			dd.close();
-			str = w.getBuffer().toString();
-			text.setText(str);
+			Desktop.getDesktop().browse(file.toURI());
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}

@@ -1252,6 +1252,8 @@ public class OT {
 		String masterCredentialID;
 		KeyCredential masterSigned;
 		MasterCredential masterPublic;
+		@XStreamAlias("publicCredential")
+		KeyCredential publicKeyCredential;
 
 		// get/set
 
@@ -1279,6 +1281,13 @@ public class OT {
 			this.masterPublic = masterPublic;
 		}
 
+		public KeyCredential getPublicKeyCredential() {
+			return publicKeyCredential;
+		}
+
+		public void setPublicKeyCredential(KeyCredential publicKeyCredential) {
+			this.publicKeyCredential = publicKeyCredential;
+		}
 	}
 
 	/*
