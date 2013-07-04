@@ -355,18 +355,6 @@ public class Engines {
 				}
 			}
 		});
-		// print PublicInfo only as its value
-		builder.registerTypeAdapter(OT.KeyValue.class, new TypeAdapter<OT.KeyValue>() {
-			@Override
-			public OT.KeyValue read(JsonReader in) throws IOException {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public void write(JsonWriter out, OT.KeyValue value) throws IOException {
-				out.value(value.getValue());
-			}
-		});
 
 		// print Identifier only as its ID
 		builder.registerTypeAdapter(OT.Identifier.class, new TypeAdapter<OT.Identifier>() {

@@ -314,8 +314,8 @@ public class OTjAlpha extends JPanel implements ActionListener {
 				//String nymIDSource = credentialList.getNymIDSource().getRaw();
 				//recipientPublicKey = (RSAPublicKey) Utils.fromIDSource(nymIDSource);
 				String keyID = credentialList.getKeyCredential().getID();
-				String str = cu.getCredentials().get(keyID);
-				OT.KeyCredential cred = (OT.KeyCredential) Engines.parse(str);
+				OT.KeyCredential cred = (OT.KeyCredential) cu.getCredentials().get(keyID);
+
 				//System.out.println(Engines.gson.toJson(cred));
 				List<OT.KeyValue> list = cred.getMasterSigned().getPublicContents().getPublicInfos();
 				for (OT.KeyValue kv : list) {

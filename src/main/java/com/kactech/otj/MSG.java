@@ -488,7 +488,7 @@ public class MSG {
 		Message inReferenceTo;
 
 		AsciiEntity<OT.User> credentialList;
-		OT.StringMap credentials;//TODO CredentialsMap
+		OT.CredentialMap credentials;
 
 		// get/set
 
@@ -524,11 +524,11 @@ public class MSG {
 			this.inReferenceTo = inReferenceTo;
 		}
 
-		public OT.StringMap getCredentials() {
+		public OT.CredentialMap getCredentials() {
 			return credentials;
 		}
 
-		public void setCredentials(OT.StringMap credentials) {
+		public void setCredentials(OT.CredentialMap credentials) {
 			this.credentials = credentials;
 		}
 

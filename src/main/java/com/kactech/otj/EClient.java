@@ -429,13 +429,16 @@ public class EClient implements Closeable, ReqNumManager {
 				if (resp.getResponseLedger().getTransactions().size() > 1)
 					logger.warn("inbox response ledger contains more than 1 tx");
 				OT.Transaction tx = resp.getResponseLedger().getTransactions().iterator().next();
-				for (OT.Item item : tx.getItems())
-					if (item.getType() == OT.Item.Type.atBalanceStatement)
-						if (item.getStatus() == OT.Item.Status.rejection) {
-							logger.warn("inbox balance rejected");
-							balanceRejected = true;
-							break;
-						}
+				if (tx.getItems() != null) {// TODO find out why can be empty
+					for (OT.Item item : tx.getItems())
+						if (item.getType() == OT.Item.Type.atBalanceStatement)
+							if (item.getStatus() == OT.Item.Status.rejection) {
+								logger.warn("inbox balance rejected");
+								balanceRejected = true;
+								break;
+							}
+				} else
+					logger.warn("inbox tx has no items");
 				if (balanceRejected) {
 					removeTransactioNum(transactionNum);
 				} else {
