@@ -57,11 +57,14 @@ public class SampleAccount {
 	public String assetID;
 	public String nymName;
 	public String nymID;
+	public String serverName;
+	public String serverID;
 
 	@Override
 	public String toString() {
 		return "SampleAccount [accountID=" + accountID + ", accountName=" + accountName + ", assetName=" + assetName
-				+ ", assetID=" + assetID + ", nymName=" + nymName + ", nymID=" + nymID + "]";
+				+ ", assetID=" + assetID + ", nymName=" + nymName + ", nymID=" + nymID + ", serverName=" + serverName
+				+ ", serverID=" + serverID + "]";
 	}
 
 }
