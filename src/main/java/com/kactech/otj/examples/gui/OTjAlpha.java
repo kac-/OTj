@@ -81,12 +81,12 @@ import org.slf4j.LoggerFactory;
 import com.kactech.otj.Client;
 import com.kactech.otj.EClient;
 import com.kactech.otj.MSG;
-import com.kactech.otj.MSG.GetBoxReceiptResp;
 import com.kactech.otj.MSG.GetNymboxResp;
 import com.kactech.otj.OT;
 import com.kactech.otj.Utils;
 import com.kactech.otj.examples.App_otj;
 import com.kactech.otj.examples.ExamplesUtils;
+import com.kactech.otj.examples.UserMessagesFilter;
 import com.kactech.otj.log4j.MemoryAppender;
 
 @SuppressWarnings("serial")
@@ -107,6 +107,7 @@ public class OTjAlpha extends JPanel implements ActionListener {
 	URLButton sources = new URLButton("sources", "https://github.com/kactech/OTj");
 	JButton message = new JButton("message");
 	SendMessageDialog messageDialog = new SendMessageDialog(null);
+	UserMessagesFilter messageFilter = new UserMessagesFilter();
 
 	public OTjAlpha(EClient client) {
 		this.client = client;
@@ -208,38 +209,7 @@ public class OTjAlpha extends JPanel implements ActionListener {
 		messageDialog.setAlwaysOnTop(true);
 		messageDialog.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
-		client.addFilter(new EClient.Filter<MSG.GetNymboxResp>() {
-			@Override
-			public GetNymboxResp filter(final GetNymboxResp obj, final EClient client) {
-				try {
-					for (OT.BoxRecord rec : obj.getNymboxLedger().getNymboxRecords())
-						if (rec.getType() == OT.Transaction.Type.message) {
-							GetBoxReceiptResp receipt = client.getClient().getBoxReceipt(obj.getNymID(), obj
-									.getNymboxLedger()
-									.getType(), rec.getTransactionNum());
-							OT.Transaction box = receipt.getBoxReceipt();
-							MSG.SendUserMessage send = ((MSG.Message) box.getInReferenceToContent())
-									.getSendUserMessage();
-							byte[] data = send.getMessagePayload().getData();
-							try {
-								String msg = Utils.open(data, client.getClient().getAccount().getCpairs().get("E")
-										.getPrivate());
-								logger.info("*****\nmail from {}\n{}\n*****", send.getNymID(), msg);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-				} catch (Exception ex) {
-				}
-				return obj;
-			}
-
-			@Override
-			public int getMask() {
-				return EClient.EVENT_STD;
-			}
-		}, MSG.GetNymboxResp.class, 0);
+		client.addFilter(messageFilter, GetNymboxResp.class, 0);
 	}
 
 	public void init() {
@@ -302,6 +272,8 @@ public class OTjAlpha extends JPanel implements ActionListener {
 			balance.setText(acc.getBalance().getAmount().toString());
 			nymID.setText(client.getClient().getAccount().getNymID());
 			accountID.setText(acc.getAccountID());
+			for (UserMessagesFilter.UserMessage msg : messageFilter.getMessages())
+				logger.info("*****\nmail from {}\n{}\n*****", msg.from, msg.text);
 		} else if (src == send) {
 			logger.info("send");
 			Long amount = Long.parseLong(this.amount.getText().trim());
