@@ -290,12 +290,17 @@ public class EClient implements Closeable, ReqNumManager {
 				logger.warn("notarize response ledger contains more than 1 tx");
 			OT.Transaction tx = resp.getResponseLedger().getTransactions().iterator().next();
 			for (OT.Item item : tx.getItems())
-				if (item.getType() == OT.Item.Type.atBalanceStatement)
+				if (item.getType() == OT.Item.Type.atBalanceStatement) {
 					if (item.getStatus() == OT.Item.Status.rejection) {
 						logger.warn("notarize balance rejected");
 						balanceRejected = true;
 						break;
 					}
+				} else if (item.getStatus() == OT.Item.Status.rejection) {
+					logger.warn("notarize transaction item rejected");
+					balanceRejected = true;
+					break;
+				}
 
 			nums.transactionNums.removeNum(transactionNum);
 			if (balanceRejected)
