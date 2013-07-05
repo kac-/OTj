@@ -274,6 +274,7 @@ public class OTjAlpha extends JPanel implements ActionListener {
 			accountID.setText(acc.getAccountID());
 			for (UserMessagesFilter.UserMessage msg : messageFilter.getMessages())
 				logger.info("*****\nmail from {}\n{}\n*****", msg.from, msg.text);
+			messageFilter.getMessages().clear();
 		} else if (src == send) {
 			logger.info("send");
 			Long amount = Long.parseLong(this.amount.getText().trim());
