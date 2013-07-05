@@ -374,10 +374,8 @@ public class EClient implements Closeable, ReqNumManager {
 					item.setInReferenceTo(rec.getInReferenceTo());
 					item.setStatus(OT.Item.Status.request);
 					item.setType(OT.Item.Type.acceptPending);
-
 					nums.getIssuedNums().removeNum(transactionNum);
 					nums.getIssuedNums().removeNum(rec.getInRefDisplay());
-
 					Engines.render(item, signingKey);
 					ptx.getItems().add(item);
 					break;
@@ -387,12 +385,8 @@ public class EClient implements Closeable, ReqNumManager {
 					item.setInReferenceTo(rec.getInReferenceTo());
 					item.setStatus(OT.Item.Status.request);
 					item.setType(OT.Item.Type.acceptItemReceipt);
-
-					//System.out.println(json(nums));
 					nums.getIssuedNums().removeNum(transactionNum);
 					nums.getIssuedNums().removeNum(rec.getInRefDisplay());
-					//popIssuedNum(nums);
-					//popIssuedNum(nums);
 					Engines.render(item, signingKey);
 					ptx.getItems().add(item);
 					break;
@@ -440,7 +434,7 @@ public class EClient implements Closeable, ReqNumManager {
 				} else
 					logger.warn("inbox tx has no items");
 				if (balanceRejected) {
-					removeTransactioNum(transactionNum);
+					removeBothNum(transactionNum);
 				} else {
 					nums.getTransactionNums().removeNum(transactionNum);
 					nums.getIssuedNums().removeNum(transactionNum);
@@ -696,8 +690,14 @@ public class EClient implements Closeable, ReqNumManager {
 				list.add(l);
 	}
 
-	private void removeTransactioNum(Long num) {
+	private void removeBothNum(Long num) {
 		Iterator<Long> li = state.transactionNums.iterator();
+		while (li.hasNext())
+			if (li.next().equals(num)) {
+				li.remove();
+				break;
+			}
+		li = state.issuedNums.iterator();
 		while (li.hasNext())
 			if (li.next().equals(num)) {
 				li.remove();

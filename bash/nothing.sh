@@ -1,3 +1,4 @@
-#!/bin/bash
 . bash/common.sh
+
 cleanSample
+runServer
