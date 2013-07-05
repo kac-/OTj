@@ -61,7 +61,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import com.google.gson.reflect.TypeToken;
 import com.kactech.otj.Engines;
@@ -124,25 +123,25 @@ public class ExamplesUtils {
 		return new ArrayList<SampleAccount>(sampleAccounts);
 	}
 
-	private static Map<String, ConnectionInfo> servers;
+	private static List<ConnectionInfo> servers;
 
-	public static Map<String, ConnectionInfo> getServers() {
+	public static List<ConnectionInfo> getServers() {
 		if (servers == null) {
 			servers = Engines.gson.fromJson(new InputStreamReader(Engines.class
 					.getResourceAsStream("/com/kactech/otj/examples/sample-servers.json")),
-					new TypeToken<Map<String, BasicConnectionInfo>>() {
+					new TypeToken<List<BasicConnectionInfo>>() {
 					}.getType());
 		}
 		return servers;
 	}
 
 	public static ConnectionInfo findServer(String part) {
-		Map<String, ConnectionInfo> map = getServers();
-		for (Entry<String, ConnectionInfo> e : map.entrySet()) {
-			if (e.getKey().startsWith(part))
-				return e.getValue();
-			if (e.getValue().getID().startsWith(part))
-				return e.getValue();
+		List<ConnectionInfo> l = getServers();
+		for (ConnectionInfo e : l) {
+			if (e.getName().startsWith(part))
+				return e;
+			if (e.getID().startsWith(part))
+				return e;
 		}
 		return null;
 	}
@@ -168,8 +167,8 @@ public class ExamplesUtils {
 				"https://raw.github.com/kactech/OTj/master/sample-data/SERVER-ot.8coin.org.otc");
 		// silver grams asset
 		contractsURI
-				.put("CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA",
-						"https://raw.github.com/FellowTraveler/Open-Transactions/master/sample-data/ot-sample-data/server_data/contracts/CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA");
+				.put("JY7kEFnm2c50CGNphdpgnlVo2hOZuLrBua5cFqWWR9Q",
+						"https://raw.github.com/FellowTraveler/Open-Transactions/master/sample-data/sample-contracts/silver.otc");
 		// kactech LOC
 		contractsURI
 				.put("3SSQuTikpv7H9KlPNvnJ5ttmjqIwQc60ySvoXfYRBc8",

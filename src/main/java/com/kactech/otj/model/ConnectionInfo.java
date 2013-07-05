@@ -53,6 +53,8 @@ package com.kactech.otj.model;
 import java.security.PublicKey;
 
 public interface ConnectionInfo {
+	public String getName();
+
 	public PublicKey getPublicKey();
 
 	public String getEndpoint();

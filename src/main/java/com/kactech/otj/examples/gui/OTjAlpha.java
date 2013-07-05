@@ -80,8 +80,9 @@ import org.slf4j.LoggerFactory;
 
 import com.kactech.otj.Client;
 import com.kactech.otj.EClient;
-import com.kactech.otj.Engines;
 import com.kactech.otj.MSG;
+import com.kactech.otj.MSG.GetBoxReceiptResp;
+import com.kactech.otj.MSG.GetNymboxResp;
 import com.kactech.otj.OT;
 import com.kactech.otj.Utils;
 import com.kactech.otj.examples.App_otj;
@@ -92,10 +93,8 @@ import com.kactech.otj.log4j.MemoryAppender;
 public class OTjAlpha extends JPanel implements ActionListener {
 	static final Logger logger = LoggerFactory.getLogger(OTjAlpha.class);
 	EClient client;
-	ThreeField server = new ThreeField(4, "server", new URLButton("OT 8coin.org",
-			"https://raw.github.com/kactech/OTj/master/sample-data/SERVER-ot.8coin.org.otc"));
-	ThreeField asset = new ThreeField(4, "asset", new URLButton("ktLOC",
-			"https://raw.github.com/kactech/OTj/master/sample-data/ASSET-ktLOC.otc"));
+	ThreeField server;
+	ThreeField asset;
 	JTextField balance = new JTextField(4);
 	JButton reload = new JButton("reload");
 	CopyField nymID = new CopyField("nymID", true, 4);
@@ -118,8 +117,13 @@ public class OTjAlpha extends JPanel implements ActionListener {
 		Box h;
 		JLabel l;
 
+		server = new ThreeField(4, "server", new URLButton(client.getConnInfo().getName(),
+				ExamplesUtils.getContractURI(client.getConnInfo().getID())));
+		server.setText(client.getConnInfo().getID());
 		box.add(server);
 
+		asset = new ThreeField(4, "asset", new URLButton(ExamplesUtils.findAsset(client.getAssetType()).assetName,
+				ExamplesUtils.getContractURI(client.getAssetType())));
 		asset.setText(client.getAssetType());
 		box.add(asset);
 
@@ -203,6 +207,39 @@ public class OTjAlpha extends JPanel implements ActionListener {
 		messageDialog.pack();
 		messageDialog.setAlwaysOnTop(true);
 		messageDialog.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+
+		client.addFilter(new EClient.Filter<MSG.GetNymboxResp>() {
+			@Override
+			public GetNymboxResp filter(final GetNymboxResp obj, final EClient client) {
+				try {
+					for (OT.BoxRecord rec : obj.getNymboxLedger().getNymboxRecords())
+						if (rec.getType() == OT.Transaction.Type.message) {
+							GetBoxReceiptResp receipt = client.getClient().getBoxReceipt(obj.getNymID(), obj
+									.getNymboxLedger()
+									.getType(), rec.getTransactionNum());
+							OT.Transaction box = receipt.getBoxReceipt();
+							MSG.SendUserMessage send = ((MSG.Message) box.getInReferenceToContent())
+									.getSendUserMessage();
+							byte[] data = send.getMessagePayload().getData();
+							try {
+								String msg = Utils.open(data, client.getClient().getAccount().getCpairs().get("E")
+										.getPrivate());
+								logger.info("*****\nmail from {}\n{}\n*****", send.getNymID(), msg);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+				} catch (Exception ex) {
+				}
+				return obj;
+			}
+
+			@Override
+			public int getMask() {
+				return EClient.EVENT_STD;
+			}
+		}, MSG.GetNymboxResp.class, 0);
 	}
 
 	public void init() {
@@ -213,7 +250,6 @@ public class OTjAlpha extends JPanel implements ActionListener {
 			public void run() {
 				try {
 					client.init();
-					server.setText(client.getClient().getServerID());
 					Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 						@Override
 						public void run() {
@@ -285,6 +321,7 @@ public class OTjAlpha extends JPanel implements ActionListener {
 			logger.info("reload Nym");
 			client.reloadState();
 		} else if (src == message) {
+			messageDialog.setLocation(getX() + getWidth(), getY());
 			messageDialog.setVisible(true);
 		} else if (src == messageDialog.getSend()) {
 			String nymID = messageDialog.getSendTo().trim();
@@ -385,8 +422,7 @@ public class OTjAlpha extends JPanel implements ActionListener {
 
 	public static EClient buildClient() {
 		EClient client = new EClient(new File("alpha_client"), ExamplesUtils.findServer("OT 8coin"));
-		//client.setAssetType("CvHGtfOOKzQKL5hFL7J4iF5yAodVKhS1rxPzME5R9XA");//silver grams
-		client.setAssetType("3SSQuTikpv7H9KlPNvnJ5ttmjqIwQc60ySvoXfYRBc8");//kactechLOC
+		client.setAssetType(ExamplesUtils.findAsset("silver").assetID);//silver grams
 		return client;
 	}
 }

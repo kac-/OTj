@@ -66,7 +66,6 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kactech.otj.MSG.GetBoxReceiptResp;
 import com.kactech.otj.OT.BoxRecord;
 import com.kactech.otj.OT.TransactionReport;
 import com.kactech.otj.model.BasicUserAccount;
@@ -465,7 +464,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 	public MSG.GetNymboxResp getNymbox() {
 		logger.info("getNymbox()");
-		return cachedNymbox = client.getNymbox();
+		return cachedNymbox = filter(client.getNymbox());
 	}
 
 	public MSG.ProcessNymboxResp processNymbox() {
@@ -476,22 +475,6 @@ public class EClient implements Closeable, ReqNumManager {
 		logger.info("processNymbox({})", getFresh);
 		if (getFresh || cachedNymbox == null)
 			getNymbox();
-		for (OT.BoxRecord rec : cachedNymbox.getNymboxLedger().getNymboxRecords())
-			if (rec.getType() == OT.Transaction.Type.message) {
-				GetBoxReceiptResp receipt = client.getBoxReceipt(cachedNymbox.getNymID(), cachedNymbox
-						.getNymboxLedger()
-						.getType(), rec.getTransactionNum());
-				OT.Transaction box = receipt.getBoxReceipt();
-				MSG.SendUserMessage send = ((MSG.Message) box.getInReferenceToContent()).getSendUserMessage();
-				byte[] data = send.getMessagePayload().getData();
-				try {
-					String msg = Utils.open(data, client.getAccount().getCpairs().get("E").getPrivate());
-					logger.info("\nmail from {}:\n{}", send.getNymID(), msg);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
 		if (cachedNymbox.getNymboxLedger().getNymboxRecords().size() > 1)
 			return processCachedNymbox();
 		else
@@ -826,5 +809,57 @@ public class EClient implements Closeable, ReqNumManager {
 
 	public void setCreateNewAccount(boolean createNewAccount) {
 		this.createNewAccount = createNewAccount;
+	}
+
+	public ConnectionInfo getConnInfo() {
+		return connInfo;
+	}
+
+	// filters
+
+	public static int EVENT_STD = 1 << 0;
+
+	public static interface Filter<T> {
+		public T filter(T obj, EClient client);
+
+		public int getMask();
+	}
+
+	protected static class PrioritizedFilter {
+		int priority;
+		Class<?> clazz;
+		Filter<?> filter;
+	}
+
+	protected List<PrioritizedFilter> filters = new ArrayList<PrioritizedFilter>();
+
+	public <T> void addFilter(Filter<T> filter, Class<T> clazz, int priority) {
+		if (filter == null)
+			throw new IllegalArgumentException("filter == null");
+		if (clazz == null)
+			throw new IllegalArgumentException("clazz == null");
+		PrioritizedFilter pf = new PrioritizedFilter();
+		pf.filter = filter;
+		pf.priority = priority;
+		pf.clazz = clazz;
+		for (int i = 0; i < filters.size(); i++)
+			if (pf.priority < filters.get(i).priority) {
+				filters.add(i, pf);
+				return;
+			}
+		filters.add(pf);
+	}
+
+	protected <T> T filter(T object) {
+		return filter(object, EVENT_STD);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected <T> T filter(T object, int event) {
+		for (PrioritizedFilter f : filters)
+			if (f.clazz.isAssignableFrom(object.getClass()))
+				if ((event & f.filter.getMask()) > 0)
+					object = ((Filter<T>) f.filter).filter(object, this);
+		return object;
 	}
 }
