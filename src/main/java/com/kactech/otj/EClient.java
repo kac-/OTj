@@ -323,6 +323,8 @@ public class EClient implements Closeable, ReqNumManager {
 		logger.info("processInbox()");
 		ensureTransNums();
 		MSG.GetInboxResp inbox = client.getInbox(state.accountID);
+		if (!inbox.getSuccess())
+			throw new RuntimeException("get inbox failed");
 		OT.Ledger inboxLedger = inbox.getInboxLedger();
 		if (inboxLedger.getInboxRecords() == null)
 			return;
@@ -475,7 +477,7 @@ public class EClient implements Closeable, ReqNumManager {
 		logger.info("processNymbox({})", getFresh);
 		if (getFresh || cachedNymbox == null)
 			getNymbox();
-		if (cachedNymbox.getNymboxLedger().getNymboxRecords().size() > 1)
+		if (cachedNymbox.getNymboxLedger().getNumPartialRecords() > 1)
 			return processCachedNymbox();
 		else
 			return null;

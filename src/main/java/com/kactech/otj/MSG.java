@@ -431,6 +431,9 @@ public class MSG {
 	public static class Response extends Request {
 		@XStreamAsAttribute
 		Boolean success;
+		Message inReferenceTo;
+
+		// get/set
 
 		public Boolean getSuccess() {
 			return success;
@@ -438,6 +441,14 @@ public class MSG {
 
 		public void setSuccess(Boolean success) {
 			this.success = success;
+		}
+
+		public Message getInReferenceTo() {
+			return inReferenceTo;
+		}
+
+		public void setInReferenceTo(Message inReferenceTo) {
+			this.inReferenceTo = inReferenceTo;
 		}
 
 	}
@@ -485,7 +496,6 @@ public class MSG {
 		Boolean hasCredentials;
 
 		String nymPublicKey;
-		Message inReferenceTo;
 
 		AsciiEntity<OT.User> credentialList;
 		OT.CredentialMap credentials;
@@ -514,14 +524,6 @@ public class MSG {
 
 		public void setNymPublicKey(String nymPublicKey) {
 			this.nymPublicKey = nymPublicKey;
-		}
-
-		public Message getInReferenceTo() {
-			return inReferenceTo;
-		}
-
-		public void setInReferenceTo(Message inReferenceTo) {
-			this.inReferenceTo = inReferenceTo;
 		}
 
 		public OT.CredentialMap getCredentials() {
@@ -563,7 +565,6 @@ public class MSG {
 		@XStreamAsAttribute
 		String accountID;
 
-		Message inReferenceTo;
 		OT.Account newAccount;
 
 		// get/set
@@ -574,14 +575,6 @@ public class MSG {
 
 		public void setAccountID(String accountID) {
 			this.accountID = accountID;
-		}
-
-		public Message getInReferenceTo() {
-			return inReferenceTo;
-		}
-
-		public void setInReferenceTo(Message inReferenceTo) {
-			this.inReferenceTo = inReferenceTo;
 		}
 
 		public OT.Account getNewAccount() {
@@ -620,7 +613,6 @@ public class MSG {
 	@XStreamAlias("re_createUserAccount")
 	public static class CreateUserAccountResp extends Response {
 		AsciiEntity<OT.User> nymfile;
-		Message inReferenceTo;
 
 		//TODO more
 		public AsciiEntity<OT.User> getNymfile() {
@@ -630,15 +622,6 @@ public class MSG {
 		public void setNymfile(AsciiEntity<OT.User> nymfile) {
 			this.nymfile = nymfile;
 		}
-
-		public Message getInReferenceTo() {
-			return inReferenceTo;
-		}
-
-		public void setInReferenceTo(Message inReferenceTo) {
-			this.inReferenceTo = inReferenceTo;
-		}
-
 	}
 
 	@XStreamAlias("getAccount")
@@ -728,7 +711,6 @@ public class MSG {
 		@XStreamAsAttribute
 		OT.Ledger.Type boxType;
 
-		Message inReferenceTo;
 		OT.Transaction boxReceipt;
 
 		// get/set
@@ -755,14 +737,6 @@ public class MSG {
 
 		public void setBoxType(OT.Ledger.Type boxType) {
 			this.boxType = boxType;
-		}
-
-		public Message getInReferenceTo() {
-			return inReferenceTo;
-		}
-
-		public void setInReferenceTo(Message inReferenceTo) {
-			this.inReferenceTo = inReferenceTo;
 		}
 
 		public OT.Transaction getBoxReceipt() {
@@ -1010,7 +984,6 @@ public class MSG {
 		String accountID;
 
 		OT.Ledger responseLedger;
-		Message inReferenceTo;
 
 		// get/set
 
@@ -1028,14 +1001,6 @@ public class MSG {
 
 		public void setResponseLedger(OT.Ledger responseLedger) {
 			this.responseLedger = responseLedger;
-		}
-
-		public Message getInReferenceTo() {
-			return inReferenceTo;
-		}
-
-		public void setInReferenceTo(Message inReferenceTo) {
-			this.inReferenceTo = inReferenceTo;
 		}
 
 	}
@@ -1081,7 +1046,6 @@ public class MSG {
 		@XStreamAsAttribute
 		String accountID;
 
-		Message inReferenceTo;
 		OT.Ledger responseLedger;
 
 		// get/set
@@ -1092,14 +1056,6 @@ public class MSG {
 
 		public void setAccountID(String accountID) {
 			this.accountID = accountID;
-		}
-
-		public Message getInReferenceTo() {
-			return inReferenceTo;
-		}
-
-		public void setInReferenceTo(Message inReferenceTo) {
-			this.inReferenceTo = inReferenceTo;
 		}
 
 		public OT.Ledger getResponseLedger() {
@@ -1143,7 +1099,6 @@ public class MSG {
 		@XStreamAsAttribute
 		String nymboxHash;
 
-		Message inReferenceTo;
 		OT.Ledger responseLedger;
 
 		// get/set
@@ -1154,14 +1109,6 @@ public class MSG {
 
 		public void setNymboxHash(String nymboxHash) {
 			this.nymboxHash = nymboxHash;
-		}
-
-		public Message getInReferenceTo() {
-			return inReferenceTo;
-		}
-
-		public void setInReferenceTo(Message inReferenceTo) {
-			this.inReferenceTo = inReferenceTo;
 		}
 
 		public OT.Ledger getResponseLedger() {

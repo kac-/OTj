@@ -51,9 +51,17 @@
 package com.kactech.otj.examples;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.script.Compilable;
+import javax.script.CompiledScript;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -67,6 +75,7 @@ import com.kactech.otj.Client;
 import com.kactech.otj.EClient;
 import com.kactech.otj.Utils;
 import com.kactech.otj.model.ConnectionInfo;
+import com.kactech.otj.script.ScriptFilter;
 
 @SuppressWarnings("static-access")
 public class App_otj {
@@ -86,6 +95,8 @@ public class App_otj {
 				.withDescription("<DIR> = client_state_dir [./" + DEF_CLIENT_DIR + "]").create('d'));
 		options.addOption(OptionBuilder.hasArg().withArgName("ID").withLongOpt("server")
 				.withDescription("<ID> = server_id_or_name [" + DEF_SERVER_NAME + "]").create('s'));
+		options.addOption(OptionBuilder.hasArg().withArgName("<NAME>(,<NAME>)*").withLongOpt("filters")
+				.withDescription("<NAME> = filter name").create('f'));
 		options.addOption("h", "help", false, "print this help");
 		options.addOption("x", "clean", false, "delete 'client' dir");
 		options.addOption("n", "new", false, "create new asset account");
@@ -96,6 +107,7 @@ public class App_otj {
 		hf.printHelp("otj [-h | (<options>) <command> (--args <args>)]", options);
 	}
 
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws Exception {
 		String command = null;
 		String hisacct = null;
@@ -107,6 +119,7 @@ public class App_otj {
 		boolean newAccount = false;
 		File dir = null;
 		ConnectionInfo connection = null;
+		List<ScriptFilter> filters = null;
 
 		CommandLineParser parser = new GnuParser();
 		CommandLine cmd = null;
@@ -230,6 +243,43 @@ public class App_otj {
 			del(dir);
 
 		newAccount = cmd.hasOption('n');
+
+		if (cmd.hasOption('f')) {
+			filters = new ArrayList<ScriptFilter>();
+			ScriptEngineManager manager = new ScriptEngineManager();
+			ScriptEngine engine = manager.getEngineByName("JavaScript");
+			Compilable compilingEngine = (Compilable) engine;
+			for (String fn : cmd.getOptionValue('f').split(",")) {
+				fn = fn.trim();
+				if (fn.isEmpty())
+					continue;
+				fn += ".js";
+				Reader r = null;
+				try {
+					r = new InputStreamReader(new FileInputStream(new File("filters", fn)), Utils.UTF8);
+				} catch (Exception e) {
+					try {
+						r = new InputStreamReader(
+								App_otj.class.getResourceAsStream("/com/kactech/otj/examples/filters/"
+										+ fn));
+					} catch (Exception e2) {
+					}
+				}
+				if (r == null) {
+					System.err.println("filter not found: " + fn);
+					System.exit(-1);
+				} else
+					try {
+						CompiledScript compiled = compilingEngine.compile(r);
+						ScriptFilter sf = new ScriptFilter(compiled);
+						filters.add(sf);
+					} catch (Exception ex) {
+						System.err.println("error while loading " + fn + ": " + ex);
+						System.exit(-1);
+					}
+			}
+		}
+
 		System.out.println("server: " + connection.getEndpoint() + " " + connection.getID());
 		System.out.println("command: '" + command + "'");
 		System.out.println("args: " + argList);
@@ -247,6 +297,9 @@ public class App_otj {
 		EClient client = new EClient(dir, connection);
 		client.setAssetType(asset != null ? asset : hisacctAsset);
 		client.setCreateNewAccount(newAccount);
+		if (filters != null)
+			for (ScriptFilter filter : filters)
+				client.addFilter(filter, filter.getType(), filter.getPriority() != null ? filter.getPriority() : 0);
 
 		try {
 			Security.addProvider(new BouncyCastleProvider());
