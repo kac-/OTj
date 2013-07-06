@@ -1,4 +1,4 @@
-type = 'java.lang.Object';
+type = 'com.kactech.otj.MSG.GetNymboxResp';
 mask = 1;
 priority = 0;
 filter = function(req, client) {
