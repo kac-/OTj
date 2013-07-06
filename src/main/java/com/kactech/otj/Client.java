@@ -55,7 +55,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.KeyPair;
 import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -415,6 +414,11 @@ public class Client implements Closeable {
 	}
 
 	public MSG.NotarizeTransactionsResp notarizeTransaction(OT.Ledger accountLedger, String nymboxHash) {
+		MSG.NotarizeTransactions req = createNotarizeTransactionsReq(accountLedger, nymboxHash);
+		return send(new MSG.Message().set(req)).getNotarizeTransactionsResp();
+	}
+
+	public MSG.NotarizeTransactions createNotarizeTransactionsReq(OT.Ledger accountLedger, String nymboxHash) {
 		MSG.NotarizeTransactions req = new MSG.NotarizeTransactions();
 		req.setServerID(serverID);
 		req.setNymID(account.getNymID());
@@ -422,7 +426,7 @@ public class Client implements Closeable {
 		req.setNymboxHash(nymboxHash);
 		req.setRequestNum(getRequest());
 		req.setAccountLedger(accountLedger);
-		return send(new MSG.Message().set(req)).getNotarizeTransactionsResp();
+		return req;
 	}
 
 	public void setReqNumManager(ReqNumManager reqNumManager) {

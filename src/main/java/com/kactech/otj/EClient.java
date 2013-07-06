@@ -279,7 +279,10 @@ public class EClient implements Closeable, ReqNumManager {
 
 		//System.out.println(json(tx));
 
-		MSG.NotarizeTransactionsResp resp = client.notarizeTransaction(ledger, nymboxHash);
+		MSG.NotarizeTransactions req = client.createNotarizeTransactionsReq(ledger, nymboxHash);
+		req = filter(req);
+		MSG.NotarizeTransactionsResp resp = client.send(new MSG.Message().set(req)).getNotarizeTransactionsResp();
+		resp = filter(resp);
 
 		logger.info("notarize transaction success: {}", resp.getSuccess());
 		boolean balanceRejected = false;

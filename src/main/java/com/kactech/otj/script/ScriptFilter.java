@@ -74,7 +74,7 @@ public class ScriptFilter implements EClient.Filter {
 		this.mask = v == null ? EClient.EVENT_STD : v.intValue();
 		String t = (String) bind.get("type");
 		t = t.replace("com.kactech.otj.MSG.", "com.kactech.otj.MSG$");
-		this.type = Class.forName((String) bind.get("type"));
+		this.type = Class.forName(t);
 		bind.clear();
 	}
 
