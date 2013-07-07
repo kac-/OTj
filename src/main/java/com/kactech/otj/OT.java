@@ -204,6 +204,8 @@ public class OT {
 		Long transactionNum;
 		@XStreamAsAttribute
 		Transaction.Type type;
+		@XStreamAsAttribute
+		Long numberOfOrigin;
 
 		// get/set
 
@@ -301,6 +303,14 @@ public class OT {
 
 		public void setType(Transaction.Type type) {
 			this.type = type;
+		}
+
+		public Long getNumberOfOrigin() {
+			return numberOfOrigin;
+		}
+
+		public void setNumberOfOrigin(Long numberOfOrigin) {
+			this.numberOfOrigin = numberOfOrigin;
 		}
 
 	}
@@ -441,6 +451,7 @@ public class OT {
 		public void setNumList(OT.NumList numList) {
 			this.numList = numList;
 		}
+
 	}
 
 	@XStreamAlias("accountLedger")
@@ -551,6 +562,8 @@ public class OT {
 		Long dateSigned;
 		@XStreamAsAttribute
 		Transaction.Type type;
+		@XStreamAsAttribute
+		Long numberOfOrigin;
 		@XStreamImplicit(itemFieldName = "item")
 		List<OT.Item> items;
 		@XStreamAsAttribute
@@ -661,6 +674,14 @@ public class OT {
 
 		public void setTotalListOfNumbers(NumListAttribute totalListOfNumbers) {
 			this.totalListOfNumbers = totalListOfNumbers;
+		}
+
+		public Long getNumberOfOrigin() {
+			return numberOfOrigin;
+		}
+
+		public void setNumberOfOrigin(Long numberOfOrigin) {
+			this.numberOfOrigin = numberOfOrigin;
 		};
 
 	}
@@ -701,6 +722,8 @@ public class OT {
 		NumListAttribute totalListOfNumbers;//TODO is it in Transaction?
 		@XStreamAsAttribute
 		Item.Type type;
+		@XStreamAsAttribute
+		Long numberOfOrigin;
 
 		OT.ArmoredString note;
 		OT.ArmoredString attachment;
@@ -943,6 +966,14 @@ public class OT {
 
 		public void setTransactionReport(List<OT.TransactionReport> transactionReport) {
 			this.transactionReport = transactionReport;
+		}
+
+		public Long getNumberOfOrigin() {
+			return numberOfOrigin;
+		}
+
+		public void setNumberOfOrigin(Long numberOfOrigin) {
+			this.numberOfOrigin = numberOfOrigin;
 		}
 
 	}
@@ -1320,6 +1351,8 @@ public class OT {
 		Long transactionNum;
 		@XStreamAsAttribute
 		Item.Type type;
+		@XStreamAsAttribute
+		Long numberOfOrigin;
 
 		// get/set
 
@@ -1385,6 +1418,14 @@ public class OT {
 
 		public void setType(Item.Type type) {
 			this.type = type;
+		}
+
+		public Long getNumberOfOrigin() {
+			return numberOfOrigin;
+		}
+
+		public void setNumberOfOrigin(Long numberOfOrigin) {
+			this.numberOfOrigin = numberOfOrigin;
 		}
 
 	}

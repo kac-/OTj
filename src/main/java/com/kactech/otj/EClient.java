@@ -254,12 +254,16 @@ public class EClient implements Closeable, ReqNumManager {
 		OT.Transaction otx = from(ledger);
 		otx.setType(OT.Transaction.Type.transfer);
 		otx.setTransactionNum(transactionNum);
+		otx.setNumberOfOrigin(0l);//hver
+		//otx.setInReferenceTo(null);//hver
 
 		OT.Item transfer = from(otx);
 		transfer.setType(OT.Item.Type.transfer);
 		transfer.setStatus(OT.Item.Status.request);
 		transfer.setAmount(amount);
 		transfer.setToAccountID(sendTo);
+		transfer.setNumberOfOrigin(0l);//hver
+		transfer.setInReferenceTo(null);//hver
 
 		Engines.render(transfer, signingKey);
 		otx.getItems().add(transfer);
@@ -269,6 +273,8 @@ public class EClient implements Closeable, ReqNumManager {
 		balance.setStatus(OT.Item.Status.request);
 		balance.setAmount(acc.getBalance().getAmount() - transfer.getAmount());
 		balance.setAttachment(new OT.ArmoredString(Engines.xstream.toXML(nums)));
+		balance.setNumberOfOrigin(0l);//hver
+		balance.setInReferenceTo(null);//hver
 
 		TransactionReport report = from(transfer);
 		reports.add(report);
@@ -368,7 +374,8 @@ public class EClient implements Closeable, ReqNumManager {
 			ptx.setAccountID(inboxLedger.getAccountID());
 			ptx.setServerID(inboxLedger.getServerID());
 			ptx.setUserID(inboxLedger.getUserID());
-			ptx.setInReferenceTo(0l);
+			ptx.setInReferenceTo(0l);//hver
+			ptx.setNumberOfOrigin(0l);//hver
 			ptx.setTransactionNum(transactionNum);
 
 			// create new list
@@ -383,7 +390,8 @@ public class EClient implements Closeable, ReqNumManager {
 					// create accept item
 					item = from(ptx);
 					item.setAmount(rec.getDisplayValue());
-					item.setInReferenceTo(rec.getInReferenceTo());
+					item.setInReferenceTo(rec.getTransactionNum());//hver
+					item.setNumberOfOrigin(rec.getNumberOfOrigin());//hver
 					item.setStatus(OT.Item.Status.request);
 					item.setType(OT.Item.Type.acceptPending);
 					nums.getIssuedNums().removeNum(transactionNum);
@@ -394,7 +402,8 @@ public class EClient implements Closeable, ReqNumManager {
 				case transferReceipt:
 					item = from(ptx);
 					item.setAmount(rec.getDisplayValue());
-					item.setInReferenceTo(rec.getInReferenceTo());
+					item.setInReferenceTo(rec.getTransactionNum());//hver
+					item.setNumberOfOrigin(rec.getNumberOfOrigin());
 					item.setStatus(OT.Item.Status.request);
 					item.setType(OT.Item.Type.acceptItemReceipt);
 					nums.getIssuedNums().removeNum(transactionNum);
@@ -409,9 +418,11 @@ public class EClient implements Closeable, ReqNumManager {
 			// create balanceStatement
 			OT.Item balance = from(ptx);
 			balance.setAmount(balanceAmount);
-			balance.setInReferenceTo(0l);
+			//hver balance.setInReferenceTo(0l);
+			balance.setNumberOfOrigin(0l);//hver
 			balance.setStatus(OT.Item.Status.request);
 			balance.setType(OT.Item.Type.balanceStatement);
+			balance.setInReferenceTo(null);//hver
 			//System.out.println(json(nums));
 			balance.setAttachment(new OT.ArmoredString(Engines.xstream.toXML(nums)));
 			if (reports.size() > 0)
@@ -733,7 +744,9 @@ public class EClient implements Closeable, ReqNumManager {
 				rep.setClosingTransactionNum(0l);
 				rep.setInReferenceTo(rec.getInReferenceTo());
 				rep.setTransactionNum(rec.getTransactionNum());
-				rep.setType(OT.Item.Type.transfer);
+				rep.setType(OT.Item.Type.transfer);//TODO bug? can be transfer or trasferReceipt
+				//rep.setType(OT.Item.Type.transferReceipt);
+				rep.setNumberOfOrigin(rec.getNumberOfOrigin());//hver
 				reps.add(rep);
 			}
 		return reps;
@@ -788,6 +801,7 @@ public class EClient implements Closeable, ReqNumManager {
 		rep.setClosingTransactionNum(0l);
 		rep.setTransactionNum(1l);//TODO ask FT
 		rep.setType(OT.Item.Type.transfer);
+		rep.setNumberOfOrigin(item.getTransactionNum());//hver
 
 		return rep;
 	}
