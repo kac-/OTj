@@ -23,3 +23,10 @@ e.g. [transfer0.sh](bash/transfer0.sh) receives 100 from *opentxs*, sends him ba
 
 If you see `Error: Could not find or load main class com.kactech.otj.examples.App_otj` while running bin/otj.sh you first have to do `mvn compile` because *otj* makes use of unpacked classes from `./target` directory
 
+
+#### filters ####
+*otj* now has injectable JavaScript filters that can e.g. create malicious request
+
+Take a look at [notarizeVirus.js](filters/notarizeVirus.js), it increments balanceStatement amount and signs contracts just before sending to the server
+
+Usage: `otj -f notarizeVirus,echo transfer --hisacct silver --args 'amount 10'`

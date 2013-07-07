@@ -10,9 +10,9 @@ Low-level client-side library for [Open Transactions](https://github.com/FellowT
 
 [OTjAlpha](/src/main/java/com/kactech/otj/examples/gui/OTjAlpha.java) GUI client for *OT 8coin.org* server, account transfers and mail support so you can easily use *OTjFaucet*- read [more](OTjAlpha.md). Precompiled 0.89.g-5 jar can be downloaded [here](https://dl.dropboxusercontent.com/u/24177759/my_apps/OTj-app-0.89.g-5.jar)
 
-[otj app](otj.md) transfer tool with command-line syntax compatible to [opentxs](https://github.com/FellowTraveler/Open-Transactions/wiki/opentxs)
+[otj app](otj.md) transfer tool with command-line syntax compatible to [opentxs](https://github.com/FellowTraveler/Open-Transactions/wiki/opentxs). Now with **FILTERS** to test malicious requests!
 
-Soon more...
+~~Soon more...~~ **project suspended**
 
 --
 Special thanks to:
