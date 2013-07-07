@@ -71,6 +71,7 @@ import com.kactech.otj.OT.TransactionReport;
 import com.kactech.otj.model.BasicUserAccount;
 import com.kactech.otj.model.ConnectionInfo;
 import com.kactech.otj.model.UserAccount;
+import com.kactech.otj.script.ScriptFilter;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 public class EClient implements Closeable, ReqNumManager {
@@ -101,6 +102,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 	OT.Account cachedAccount;
 	MSG.GetNymboxResp cachedNymbox;
+	List<ScriptFilter> filters;
 
 	public EClient(File dir, ConnectionInfo connInfo) {
 		super();
@@ -108,6 +110,7 @@ public class EClient implements Closeable, ReqNumManager {
 		this.connInfo = connInfo;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void init() {
 		this.dir.mkdirs();
 		// user account
@@ -151,6 +154,9 @@ public class EClient implements Closeable, ReqNumManager {
 		client = new Client(uacc, connInfo.getID(), connInfo.getPublicKey(), new JeromqTransport(
 				connInfo.getEndpoint()), connInfo.getNymID());
 		client.setReqNumManager(this);
+		if (filters != null)
+			for (ScriptFilter f : filters)
+				client.addFilter(f, f.getType(), f.getPriority() == null ? 0 : f.getPriority());
 
 		// if accountID is null or asset different than saved than create new one
 		if (state.accountID == null || (assetType != null && !state.assetType.equals(assetType)) || createNewAccount) {
@@ -171,10 +177,10 @@ public class EClient implements Closeable, ReqNumManager {
 			state.accountID = resp.getAccountID();
 			state.assetType = resp.getNewAccount().getAssetTypeID();
 		}
-		logger.info("init done\nnymID: {}\naccountID: {}\nassetID: {}", client.getAccount().getNymID(),
+		logger.info("init done\nnymID: {}\naccountID: {}\nassetID: {}", client.getUserAccount().getNymID(),
 				state.accountID, state.assetType);
 		try {
-			Utils.writeDirs(new File(dir, nymIDFile), client.getAccount().getNymID());
+			Utils.writeDirs(new File(dir, nymIDFile), client.getUserAccount().getNymID());
 		} catch (IOException e) {
 			logger.warn("storing nymID: " + e.toString());
 		}
@@ -238,7 +244,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 		List<OT.TransactionReport> reports = makeOutboxReports(outboxLedger);
 
-		PrivateKey signingKey = client.getAccount().getCpairs().get("S").getPrivate();
+		PrivateKey signingKey = client.getUserAccount().getCpairs().get("S").getPrivate();
 		OT.User nums = makeNums();
 		Long transactionNum = state.transactionNums.peek();
 
@@ -279,10 +285,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 		//System.out.println(json(tx));
 
-		MSG.NotarizeTransactions req = client.createNotarizeTransactionsReq(ledger, nymboxHash);
-		req = filter(req);
-		MSG.NotarizeTransactionsResp resp = client.send(new MSG.Message().set(req)).getNotarizeTransactionsResp();
-		resp = filter(resp);
+		MSG.NotarizeTransactionsResp resp = client.notarizeTransaction(ledger, nymboxHash);
 
 		logger.info("notarize transaction success: {}", resp.getSuccess());
 		boolean balanceRejected = false;
@@ -344,7 +347,7 @@ public class EClient implements Closeable, ReqNumManager {
 			// getNymbox for nymboxHash
 			String nymboxHash = cachedNymbox.getNymboxHash();
 			long balanceAmount = assetAcount.getBalance().getAmount();
-			PrivateKey signingKey = client.getAccount().getCpairs().get("S").getPrivate();
+			PrivateKey signingKey = client.getUserAccount().getCpairs().get("S").getPrivate();
 			OT.User nums = makeNums();
 			//System.out.println(json(nums));
 			Long transactionNum = state.transactionNums.peek();
@@ -469,7 +472,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 	public MSG.GetNymboxResp getNymbox() {
 		logger.info("getNymbox()");
-		return cachedNymbox = filter(client.getNymbox());
+		return cachedNymbox = client.getNymbox();
 	}
 
 	public MSG.ProcessNymboxResp processNymbox() {
@@ -490,7 +493,7 @@ public class EClient implements Closeable, ReqNumManager {
 		logger.info("processCachedNymbox()");
 
 		OT.Ledger nymled = cachedNymbox.getNymboxLedger();
-		PrivateKey signingKey = client.getAccount().getCpairs().get("S").getPrivate();
+		PrivateKey signingKey = client.getUserAccount().getCpairs().get("S").getPrivate();
 		OT.Ledger otled = new OT.Ledger();
 
 		otled.transactions = new ArrayList<OT.Transaction>();
@@ -607,7 +610,7 @@ public class EClient implements Closeable, ReqNumManager {
 	}
 
 	private MSG.CreateUserAccountResp _createUserAccount() {
-		UserAccount account = client.getAccount();
+		UserAccount account = client.getUserAccount();
 		Map<String, KeyPair> pairs, cpairs;
 		pairs = account.getPairs();
 		cpairs = account.getCpairs();
@@ -820,51 +823,7 @@ public class EClient implements Closeable, ReqNumManager {
 		return connInfo;
 	}
 
-	// filters
-
-	public static int EVENT_STD = 1 << 0;
-
-	public static interface Filter<T> {
-		public T filter(T obj, EClient client);
-
-		public int getMask();
-	}
-
-	protected static class PrioritizedFilter {
-		int priority;
-		Class<?> clazz;
-		Filter<?> filter;
-	}
-
-	protected List<PrioritizedFilter> filters = new ArrayList<PrioritizedFilter>();
-
-	public <T> void addFilter(Filter<T> filter, Class<T> clazz, int priority) {
-		if (filter == null)
-			throw new IllegalArgumentException("filter == null");
-		if (clazz == null)
-			throw new IllegalArgumentException("clazz == null");
-		PrioritizedFilter pf = new PrioritizedFilter();
-		pf.filter = filter;
-		pf.priority = priority;
-		pf.clazz = clazz;
-		for (int i = 0; i < filters.size(); i++)
-			if (pf.priority < filters.get(i).priority) {
-				filters.add(i, pf);
-				return;
-			}
-		filters.add(pf);
-	}
-
-	protected <T> T filter(T object) {
-		return filter(object, EVENT_STD);
-	}
-
-	@SuppressWarnings("unchecked")
-	protected <T> T filter(T object, int event) {
-		for (PrioritizedFilter f : filters)
-			if (f.clazz.isAssignableFrom(object.getClass()))
-				if ((event & f.filter.getMask()) > 0)
-					object = ((Filter<T>) f.filter).filter(object, this);
-		return object;
+	public void setFilters(List<ScriptFilter> filters) {
+		this.filters = filters;
 	}
 }

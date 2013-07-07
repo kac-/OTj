@@ -56,14 +56,14 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kactech.otj.EClient;
+import com.kactech.otj.Client;
 import com.kactech.otj.MSG;
 import com.kactech.otj.MSG.GetBoxReceiptResp;
 import com.kactech.otj.MSG.GetNymboxResp;
 import com.kactech.otj.OT;
 import com.kactech.otj.Utils;
 
-public class UserMessagesFilter implements EClient.Filter<MSG.GetNymboxResp> {
+public class UserMessagesFilter implements Client.Filter<MSG.GetNymboxResp> {
 	private static final Logger logger = LoggerFactory.getLogger(UserMessagesFilter.class);
 
 	public static class UserMessage {
@@ -74,11 +74,11 @@ public class UserMessagesFilter implements EClient.Filter<MSG.GetNymboxResp> {
 	List<UserMessage> messages = new ArrayList<UserMessage>();
 
 	@Override
-	public GetNymboxResp filter(GetNymboxResp obj, EClient client) {
+	public GetNymboxResp filter(GetNymboxResp obj, Client client) {
 		try {
 			for (OT.BoxRecord rec : obj.getNymboxLedger().getNymboxRecords())
 				if (rec.getType() == OT.Transaction.Type.message) {
-					GetBoxReceiptResp receipt = client.getClient().getBoxReceipt(obj.getNymID(), obj
+					GetBoxReceiptResp receipt = client.getBoxReceipt(obj.getNymID(), obj
 							.getNymboxLedger()
 							.getType(), rec.getTransactionNum());
 					OT.Transaction box = receipt.getBoxReceipt();
@@ -89,7 +89,7 @@ public class UserMessagesFilter implements EClient.Filter<MSG.GetNymboxResp> {
 					try {
 						UserMessage umsg = new UserMessage();
 						umsg.from = send.getNymID();
-						umsg.text = Utils.open(data, client.getClient().getAccount().getCpairs().get("E")
+						umsg.text = Utils.open(data, client.getUserAccount().getCpairs().get("E")
 								.getPrivate());
 						messages.add(umsg);
 					} catch (Exception e) {
@@ -103,10 +103,12 @@ public class UserMessagesFilter implements EClient.Filter<MSG.GetNymboxResp> {
 
 	@Override
 	public int getMask() {
-		return EClient.EVENT_STD;
+		return Client.EVENT_STD;
 	}
 
-	public List<UserMessage> getMessages() {
-		return messages;
+	public List<UserMessage> getAndClearMessages() {
+		List<UserMessage> msgs = new ArrayList<UserMessage>(messages);
+		messages.clear();
+		return msgs;
 	}
 }

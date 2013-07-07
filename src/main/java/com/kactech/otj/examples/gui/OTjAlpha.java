@@ -209,7 +209,6 @@ public class OTjAlpha extends JPanel implements ActionListener {
 		messageDialog.setAlwaysOnTop(true);
 		messageDialog.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
-		client.addFilter(messageFilter, GetNymboxResp.class, 0);
 	}
 
 	public void init() {
@@ -220,6 +219,7 @@ public class OTjAlpha extends JPanel implements ActionListener {
 			public void run() {
 				try {
 					client.init();
+					client.getClient().addFilter(messageFilter, GetNymboxResp.class, 0);
 					Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 						@Override
 						public void run() {
@@ -270,11 +270,10 @@ public class OTjAlpha extends JPanel implements ActionListener {
 			OT.Account acc;
 			acc = client.getAccount();
 			balance.setText(acc.getBalance().getAmount().toString());
-			nymID.setText(client.getClient().getAccount().getNymID());
+			nymID.setText(client.getClient().getUserAccount().getNymID());
 			accountID.setText(acc.getAccountID());
-			for (UserMessagesFilter.UserMessage msg : messageFilter.getMessages())
+			for (UserMessagesFilter.UserMessage msg : messageFilter.getAndClearMessages())
 				logger.info("*****\nmail from {}\n{}\n*****", msg.from, msg.text);
-			messageFilter.getMessages().clear();
 		} else if (src == send) {
 			logger.info("send");
 			Long amount = Long.parseLong(this.amount.getText().trim());

@@ -54,10 +54,10 @@ import javax.script.Bindings;
 import javax.script.CompiledScript;
 import javax.script.ScriptException;
 
-import com.kactech.otj.EClient;
+import com.kactech.otj.Client;
 
 @SuppressWarnings("rawtypes")
-public class ScriptFilter implements EClient.Filter {
+public class ScriptFilter implements Client.Filter {
 	CompiledScript compiled;
 	Integer priority;
 	int mask;
@@ -71,7 +71,7 @@ public class ScriptFilter implements EClient.Filter {
 		if (v != null)
 			this.priority = v.intValue();
 		v = (Double) bind.get("mask");
-		this.mask = v == null ? EClient.EVENT_STD : v.intValue();
+		this.mask = v == null ? Client.EVENT_STD : v.intValue();
 		String t = (String) bind.get("type");
 		t = t.replace("com.kactech.otj.MSG.", "com.kactech.otj.MSG$");
 		this.type = Class.forName(t);
@@ -79,7 +79,7 @@ public class ScriptFilter implements EClient.Filter {
 	}
 
 	@Override
-	public Object filter(Object obj, EClient client) {
+	public Object filter(Object obj, Client client) {
 		Bindings bind = compiled.getEngine().createBindings();
 		bind.put("toFilter", obj);
 		bind.put("client", client);

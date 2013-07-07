@@ -298,8 +298,7 @@ public class App_otj {
 		client.setAssetType(asset != null ? asset : hisacctAsset);
 		client.setCreateNewAccount(newAccount);
 		if (filters != null)
-			for (ScriptFilter filter : filters)
-				client.addFilter(filter, filter.getType(), filter.getPriority() != null ? filter.getPriority() : 0);
+			client.setFilters(filters);
 
 		try {
 			Security.addProvider(new BouncyCastleProvider());

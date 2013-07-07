@@ -56,6 +56,7 @@ import java.nio.ByteBuffer;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -67,7 +68,7 @@ import com.kactech.otj.model.UserAccount;
 public class Client implements Closeable {
 	static final Logger logger = LoggerFactory.getLogger(Client.class);
 	public static boolean DEBUG_JSON = false;
-	UserAccount account;
+	UserAccount userAccount;
 	String serverID;
 	String serverNymID;
 	PublicKey serverPublicKey;
@@ -77,7 +78,7 @@ public class Client implements Closeable {
 
 	public String send(String unsigned) {
 		try {
-			String signed = Utils.sign(unsigned, account.getCpairs().get("A").getPrivate());
+			String signed = Utils.sign(unsigned, userAccount.getCpairs().get("A").getPrivate());
 			logger.debug('\n' + signed);
 			return Utils.parseSigned(send_s(signed)).getUnsigned();
 		} catch (Exception e) {
@@ -107,7 +108,7 @@ public class Client implements Closeable {
 			byte[] by = Utils.base64Decode(str);
 			try {
 				by = Utils.unpack(by, byte[].class);
-				str = Utils.open(by, account.getCpairs().get("E").getPrivate());
+				str = Utils.open(by, userAccount.getCpairs().get("E").getPrivate());
 			} catch (Exception e) {
 				throw new RuntimeException("opening envelope");
 			}
@@ -128,7 +129,7 @@ public class Client implements Closeable {
 	public Client(UserAccount account, String serverID, PublicKey serverPublicKey, Transport transport,
 			String serverNymID) {
 		super();
-		this.account = account;
+		this.userAccount = account;
 		this.serverID = serverID;
 		this.serverPublicKey = serverPublicKey;
 		this.transport = transport;
@@ -140,8 +141,8 @@ public class Client implements Closeable {
 		transport.close();
 	}
 
-	public UserAccount getAccount() {
-		return account;
+	public UserAccount getUserAccount() {
+		return userAccount;
 	}
 
 	public String getServerID() {
@@ -168,7 +169,7 @@ public class Client implements Closeable {
 
 	public long getRequestRaw() {
 		MSG.GetRequest req = new MSG.GetRequest();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		MSG.Message msg = new MSG.Message();
 		msg.setGetRequest(req);
@@ -180,7 +181,7 @@ public class Client implements Closeable {
 	}
 
 	public MSG.Message send(MSG.Message msg) {
-		Engines.render(msg, getAccount().getCpairs().get("A").getPrivate());
+		Engines.render(msg, getUserAccount().getCpairs().get("A").getPrivate());
 		if (DEBUG_JSON)
 			logger.debug("\n{\"status\": \"request\", \"message\":\n{}},", Engines.gson.toJson(msg));
 		else
@@ -202,7 +203,7 @@ public class Client implements Closeable {
 
 	public MSG.CreateUserAccountResp createUserAccountNew(OT.User credentialList, OT.CredentialMap credentials) {
 		MSG.CreateUserAccount req = new MSG.CreateUserAccount();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		//req.setRequestNum(getRequest());
 		req.setRequestNum(1l);//TODO find out why
@@ -214,14 +215,14 @@ public class Client implements Closeable {
 	@Deprecated
 	public MSG.CreateUserAccountResp createUserAccountNew() {
 		Map<String, KeyPair> pairs, cpairs;
-		pairs = getAccount().getPairs();
-		cpairs = getAccount().getCpairs();
+		pairs = getUserAccount().getPairs();
+		cpairs = getUserAccount().getCpairs();
 
 		OT.User credentialList = new OT.User();
 		OT.CredentialMap credentials = new OT.CredentialMap();
 
-		String nymIDSource = account.getNymIDSource();
-		String nymID = account.getNymID();
+		String nymIDSource = userAccount.getNymIDSource();
+		String nymID = userAccount.getNymID();
 		//System.out.println(nymIDSource);
 		//System.out.println(nymID);
 		OT.MasterCredential masterCredential = new OT.MasterCredential();
@@ -229,7 +230,7 @@ public class Client implements Closeable {
 		masterCredential.setNymIDSource(new OT.ArmoredString(nymIDSource));
 		OT.PublicContents publicContents = new OT.PublicContents();
 		publicContents.setPublicInfos(new ArrayList<OT.KeyValue>());
-		for (Entry<String, String> e : getAccount().getSources().entrySet())
+		for (Entry<String, String> e : getUserAccount().getSources().entrySet())
 			publicContents.getPublicInfos().add(new OT.KeyValue(e.getKey(), e.getValue()));
 		publicContents.setCount(3);
 
@@ -248,7 +249,7 @@ public class Client implements Closeable {
 		masterSigned.setMasterPublic(masterCredential);
 		publicContents = new OT.PublicContents();
 		publicContents.setPublicInfos(new ArrayList<OT.KeyValue>());
-		for (Entry<String, String> e : getAccount().getCsources().entrySet())
+		for (Entry<String, String> e : getUserAccount().getCsources().entrySet())
 			publicContents.getPublicInfos().add(new OT.KeyValue(e.getKey(), e.getValue()));
 		publicContents.setCount(3);
 
@@ -284,7 +285,7 @@ public class Client implements Closeable {
 
 	public MSG.CheckUserResp checkUser(String nymID) {
 		MSG.CheckUser req = new MSG.CheckUser();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		req.setNymID2(nymID);
 		req.setRequestNum(getRequest());
@@ -302,7 +303,7 @@ public class Client implements Closeable {
 	public MSG.SendUserMessageResp sendUserMessage(String message, String recipientNymID,
 			PublicKey recipientPublicKey) {
 		MSG.SendUserMessage req = new MSG.SendUserMessage();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		req.setNymID2(recipientNymID);
 		req.setRequestNum(getRequest());
@@ -319,18 +320,18 @@ public class Client implements Closeable {
 
 	public MSG.GetNymboxResp getNymbox() {
 		MSG.GetNymbox req = new MSG.GetNymbox();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		req.setRequestNum(getRequest());
 		MSG.Message msg = new MSG.Message();
 		msg.setGetNymbox(req);
 		MSG.Message resp = send(msg);
-		return resp.getGetNymboxResp();
+		return filter(resp.getGetNymboxResp());
 	}
 
 	public MSG.GetBoxReceiptResp getBoxReceipt(String accountID, OT.Ledger.Type boxType, long transactionNum) {
 		MSG.GetBoxReceipt req = new MSG.GetBoxReceipt();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		req.setRequestNum(getRequest());
 		req.setAccountID(accountID);
@@ -349,7 +350,7 @@ public class Client implements Closeable {
 
 	public MSG.GetTransactionNumResp getTransactionNum(String nymboxHash) {
 		MSG.GetTransactionNum req = new MSG.GetTransactionNum();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		req.setRequestNum(getRequest());
 		req.setNymboxHash(nymboxHash);
@@ -358,7 +359,7 @@ public class Client implements Closeable {
 
 	public MSG.CreateAccountResp createAccount(String assetType) {
 		MSG.CreateAccount req = new MSG.CreateAccount();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		req.setRequestNum(getRequest());
 		req.setAssetType(assetType);
@@ -367,7 +368,7 @@ public class Client implements Closeable {
 
 	public MSG.GetInboxResp getInbox(String accountID) {
 		MSG.GetInbox req = new MSG.GetInbox();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		req.setRequestNum(getRequest());
 		req.setAccountID(accountID);
@@ -376,7 +377,7 @@ public class Client implements Closeable {
 
 	public MSG.GetOutboxResp getOutbox(String accountID) {
 		MSG.GetOutbox req = new MSG.GetOutbox();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		req.setRequestNum(getRequest());
 		req.setAccountID(accountID);
@@ -385,7 +386,7 @@ public class Client implements Closeable {
 
 	public MSG.GetAccountResp getAccount(String accountID) {
 		MSG.GetAccount req = new MSG.GetAccount();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		req.setRequestNum(getRequest());
 		req.setAccountID(accountID);
@@ -394,7 +395,7 @@ public class Client implements Closeable {
 
 	public MSG.ProcessNymboxResp processNymbox(OT.Ledger ledger, String nymboxHash) {
 		MSG.ProcessNymbox req = new MSG.ProcessNymbox();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		req.setRequestNum(getRequest());
 		req.setNymboxHash(nymboxHash);
@@ -404,7 +405,7 @@ public class Client implements Closeable {
 
 	public MSG.ProcessInboxResp processInbox(OT.Ledger ledger, String nymboxHash) {
 		MSG.ProcessInbox req = new MSG.ProcessInbox();
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setServerID(serverID);
 		req.setRequestNum(getRequest());
 		req.setAccountID(ledger.getAccountID());
@@ -415,13 +416,13 @@ public class Client implements Closeable {
 
 	public MSG.NotarizeTransactionsResp notarizeTransaction(OT.Ledger accountLedger, String nymboxHash) {
 		MSG.NotarizeTransactions req = createNotarizeTransactionsReq(accountLedger, nymboxHash);
-		return send(new MSG.Message().set(req)).getNotarizeTransactionsResp();
+		return filter(send(new MSG.Message().set(filter(req))).getNotarizeTransactionsResp());
 	}
 
 	public MSG.NotarizeTransactions createNotarizeTransactionsReq(OT.Ledger accountLedger, String nymboxHash) {
 		MSG.NotarizeTransactions req = new MSG.NotarizeTransactions();
 		req.setServerID(serverID);
-		req.setNymID(account.getNymID());
+		req.setNymID(userAccount.getNymID());
 		req.setAccountID(accountLedger.getAccountID());
 		req.setNymboxHash(nymboxHash);
 		req.setRequestNum(getRequest());
@@ -443,5 +444,53 @@ public class Client implements Closeable {
 		public NotInEnvelopeException(String message) {
 			super("content:\n" + message);
 		}
+	}
+
+	// filters
+
+	public static int EVENT_STD = 1 << 0;
+
+	public static interface Filter<T> {
+		public T filter(T obj, Client client);
+
+		public int getMask();
+	}
+
+	protected static class PrioritizedFilter {
+		int priority;
+		Class<?> clazz;
+		Filter<?> filter;
+	}
+
+	protected List<PrioritizedFilter> filters = new ArrayList<PrioritizedFilter>();
+
+	public <T> void addFilter(Filter<T> filter, Class<T> clazz, int priority) {
+		if (filter == null)
+			throw new IllegalArgumentException("filter == null");
+		if (clazz == null)
+			throw new IllegalArgumentException("clazz == null");
+		PrioritizedFilter pf = new PrioritizedFilter();
+		pf.filter = filter;
+		pf.priority = priority;
+		pf.clazz = clazz;
+		for (int i = 0; i < filters.size(); i++)
+			if (pf.priority < filters.get(i).priority) {
+				filters.add(i, pf);
+				return;
+			}
+		filters.add(pf);
+	}
+
+	protected <T> T filter(T object) {
+		return filter(object, EVENT_STD);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected <T> T filter(T object, int event) {
+		for (PrioritizedFilter f : filters)
+			if ((event & f.filter.getMask()) > 0)
+				if (f.clazz.isAssignableFrom(object.getClass()))
+					object = ((Filter<T>) f.filter).filter(object, this);
+		return object;
 	}
 }
