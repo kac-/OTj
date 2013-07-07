@@ -1,3 +1,4 @@
+otj = Packages.com.kactech.otj
 type = 'com.kactech.otj.MSG.NotarizeTransactions';
 mask = 1;
 priority = 0;
@@ -10,9 +11,9 @@ filter = function(req, client) {
 	balance.setAmount(v + 1);
 	println("VIRUS BALANCE " + balance.getAmount());
 	signKey = client.getUserAccount().getCpairs().get("S").getPrivate();
-	com.kactech.otj.Engines.render(balance, signKey);
-	com.kactech.otj.Engines.render(tx, signKey);
-	com.kactech.otj.Engines.render(req.getAccountLedger(), signKey);
+	otj.Engines.render(balance, signKey);
+	otj.Engines.render(tx, signKey);
+	otj.Engines.render(req.getAccountLedger(), signKey);
 	return req;
 }
 
