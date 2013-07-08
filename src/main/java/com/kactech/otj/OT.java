@@ -2277,7 +2277,7 @@ public class OT {
 				nl.armored = reader.getValue();
 				String str = AsciiA.getString(nl.armored.trim());
 				for (String s : str.split(","))
-					if (!s.isEmpty())
+					if (s.length() != 0)
 						nl.add(new Long(s));
 				return nl;
 			}
