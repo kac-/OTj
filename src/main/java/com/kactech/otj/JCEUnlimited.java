@@ -55,8 +55,8 @@ import java.io.StringReader;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
-import org.bouncycastle.openssl.PEMReader;
-import org.bouncycastle.openssl.PasswordFinder;
+import org.spongycastle.openssl.PEMReader;
+import org.spongycastle.openssl.PasswordFinder;
 
 import com.kactech.otj.model.BasicPrivateInfo;
 
