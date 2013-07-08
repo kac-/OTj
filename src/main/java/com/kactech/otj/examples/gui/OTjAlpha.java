@@ -57,7 +57,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.security.PublicKey;
-import java.security.Security;
 import java.util.List;
 
 import javax.swing.Box;
@@ -74,7 +73,6 @@ import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -367,7 +365,7 @@ public class OTjAlpha extends JPanel implements ActionListener {
 	}
 
 	static void createAndShow() {
-		Security.addProvider(new BouncyCastleProvider());
+		Utils.init();
 		Client.DEBUG_JSON = true;
 		OTjAlpha alpha = new OTjAlpha(buildClient());
 		JFrame f = new JFrame();

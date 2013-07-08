@@ -66,17 +66,16 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPublicKeySpec;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -96,21 +95,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.codec.binary.Base64;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.params.RSAKeyParameters;
-import org.bouncycastle.crypto.util.PublicKeyFactory;
-import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPObjectFactory;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPUtil;
 import org.bouncycastle.openpgp.operator.jcajce.JcaPGPKeyConverter;
-import org.bouncycastle.openssl.PEMException;
-import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.PEMReader;
 import org.bouncycastle.openssl.PEMWriter;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.x509.X509StreamParser;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -127,6 +119,14 @@ import com.kactech.otj.model.Signed;
 import com.kactech.otj.model.SigningSupport;
 
 public class Utils {
+	private static boolean _init = true;
+
+	public static void init() {
+		if (_init)
+			Security.addProvider(new BouncyCastleProvider());
+		_init = false;
+	}
+
 	private static final Utils _it = new Utils();
 	public static final Charset US_ASCII = Charset.forName("US-ASCII");
 	public static final Charset UTF8 = Charset.forName("UTF-8");
@@ -266,24 +266,9 @@ public class Utils {
 	/*
 	 * PEM
 	 */
-	public static RSAPublicKey pemReadRSAPublicKey(String str) throws IOException, InvalidKeySpecException,
-			NoSuchAlgorithmException {
-
-		byte[] keyBytes;
-
-		PemReader reader = new PemReader(new StringReader(str));
-		keyBytes = reader.readPemObject().getContent();
-		reader.close();
-		/*
-		str = unarmor(str, false);
-		keyBytes = base64Decode(str);
-		*/
-		AsymmetricKeyParameter keyParam = PublicKeyFactory.createKey(keyBytes);
-		SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(keyParam);
-		RSAKeyParameters rsaPubParams = (RSAKeyParameters) PublicKeyFactory.createKey(publicKeyInfo);
-		RSAPublicKeySpec rsaSpec = new RSAPublicKeySpec(rsaPubParams.getModulus(), rsaPubParams.getExponent());
-		RSAPublicKey pk = (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(rsaSpec);
-		return pk;
+	public static RSAPublicKey pemReadRSAPublicKey(String str) throws IOException {
+		PEMReader r = new PEMReader(new StringReader(str));
+		return (RSAPublicKey) r.readObject();
 	}
 
 	/*
@@ -580,8 +565,6 @@ public class Utils {
 				+ "-----END PUBLIC KEY-----\n";
 	}
 
-	private static final JcaPEMKeyConverter _jcaPEMKeyConverter = new JcaPEMKeyConverter();
-
 	public static PublicKey fromRawPublicInfo(String str, boolean escaped) {
 		str = unarmor(str, escaped);
 		byte[] by = base64Decode(str);
@@ -591,19 +574,10 @@ public class Utils {
 			// you've fucked up something
 			throw new RuntimeException(e);
 		}
-		PEMParser p = new PEMParser(new StringReader(str));
-		Object pobj;
+		PEMReader r = new PEMReader(new StringReader(str));
 		try {
-			pobj = p.readObject();
+			return (PublicKey) r.readObject();
 		} catch (IOException e) {
-			// io exception? hehe
-			throw new RuntimeException(e);
-		}
-		SubjectPublicKeyInfo spub = SubjectPublicKeyInfo.getInstance(pobj);
-		try {
-			return _jcaPEMKeyConverter.getPublicKey(spub);
-		} catch (PEMException e) {
-			// dont' bother
 			throw new RuntimeException(e);
 		}
 	}

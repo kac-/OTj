@@ -54,7 +54,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +68,6 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.kactech.otj.Client;
 import com.kactech.otj.EClient;
@@ -301,7 +299,7 @@ public class App_otj {
 			client.setFilters(filters);
 
 		try {
-			Security.addProvider(new BouncyCastleProvider());
+			Utils.init();
 			Client.DEBUG_JSON = true;
 			client.init();
 

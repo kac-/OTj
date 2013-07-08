@@ -53,12 +53,9 @@ package com.kactech.otj.examples;
 import java.io.File;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
-
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -71,9 +68,6 @@ import com.kactech.otj.model.BasicUserAccount;
 import com.kactech.otj.model.UserAccount;
 
 public class DirtyClientExample {
-	static {
-		Security.addProvider(new BouncyCastleProvider());
-	}
 	private static final File dirtyExampleAccountPath = Utils.file("testData", "acc", "dirtyExample.ser");
 	private static UserAccount testAccount;
 
@@ -114,6 +108,7 @@ public class DirtyClientExample {
 	}
 
 	public static void main(String[] args) throws Exception {
+		Utils.init();
 		Client client = buildClient();
 		// send message to Trader Bob
 		String recipientNymID = "SP8rPHc6GMRPL517UL5J8RK2yOiToyVqMaj3PUHvLzM";

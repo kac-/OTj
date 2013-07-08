@@ -66,7 +66,7 @@ public class JeromqTransport implements Transport {
 	Socket socket;
 
 	public JeromqTransport(String endpoint) {
-		this(endpoint, 1, 5000l);
+		this(endpoint, 1, 1000l);
 	}
 
 	public JeromqTransport(String endpoint, int ioThreads, long timeout) {

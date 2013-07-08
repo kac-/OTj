@@ -107,7 +107,7 @@ public class OTPssSignature extends Signature {
 				, mgfDigest
 				// max salt length, openssl -2 equivalent
 				, (key.getModulus().toByteArray().length - 1) - 32 - 2
-				, org.bouncycastle.crypto.signers.PSSSigner.TRAILER_IMPLICIT);
+				, PSSSigner.TRAILER_IMPLICIT);
 	}
 
 	static RSAKeyParameters generatePublicKeyParameter(
