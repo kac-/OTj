@@ -52,41 +52,34 @@ package com.kactech.otj;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
-import org.bouncycastle.operator.InputDecryptorProvider;
-import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
+import org.bouncycastle.openssl.PEMReader;
+import org.bouncycastle.openssl.PasswordFinder;
 
 import com.kactech.otj.model.BasicPrivateInfo;
 
 public class JCEUnlimited {
-	public static BasicPrivateInfo getPrivateInfo(String privateInfo, char[] masterPassword) {
+	public static BasicPrivateInfo getPrivateInfo(String privateInfo, final char[] masterPassword) {
 		BasicPrivateInfo bpi = new BasicPrivateInfo();
-		PEMParser p = new PEMParser(new StringReader(privateInfo));
+		PEMReader p = new PEMReader(new StringReader(privateInfo), new PasswordFinder() {
+
+			@Override
+			public char[] getPassword() {
+
+				return masterPassword;
+			}
+		});
 		Object o;
 		try {
 			while ((o = p.readObject()) != null) {
-				if (o instanceof PKCS8EncryptedPrivateKeyInfo) {
-					PKCS8EncryptedPrivateKeyInfo epki = (PKCS8EncryptedPrivateKeyInfo) o;
-
-					JceOpenSSLPKCS8DecryptorProviderBuilder dpb = new JceOpenSSLPKCS8DecryptorProviderBuilder()
-							.setProvider("BC");
-					InputDecryptorProvider pkcs8Prov = dpb.build(
-							masterPassword
-							);
-					PrivateKeyInfo pki = epki.decryptPrivateKeyInfo(pkcs8Prov);
-					JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
-					bpi.setPrivateKey(converter.getPrivateKey(pki));
-				} else if (o instanceof X509CertificateHolder) {
-					bpi.setCertificate(new JcaX509CertificateConverter().setProvider("BC")
-							.getCertificate((X509CertificateHolder) o));
-				} else
-					throw new RuntimeException("unexpected content: " + o.getClass());
+				if (o instanceof PrivateKey)
+					bpi.setPrivateKey((PrivateKey) o);
+				else if (o instanceof X509Certificate)
+					bpi.setCertificate((X509Certificate) o);
+				else
+					System.err.println(o.getClass());
 			}
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
