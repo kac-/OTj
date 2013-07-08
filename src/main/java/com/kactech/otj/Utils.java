@@ -59,11 +59,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -128,8 +128,8 @@ public class Utils {
 	}
 
 	private static final Utils _it = new Utils();
-	public static final Charset US_ASCII = Charset.forName("US-ASCII");
-	public static final Charset UTF8 = Charset.forName("UTF-8");
+	public static final String US_ASCII = "US-ASCII";
+	public static final String UTF8 = "UTF-8";
 
 	/*
 	 * ascii armor handling
@@ -347,7 +347,7 @@ public class Utils {
 	 * just forward to org.apache.commons.codec.binary.Base64
 	 */
 	public static byte[] base64Decode(String input) {
-		return Base64.decodeBase64(input);
+		return Base64.decodeBase64(bytes(input, UTF8));
 	}
 
 	public static byte[] base64Decode(byte[] input) {
@@ -355,16 +355,18 @@ public class Utils {
 	}
 
 	public static String base64DecodeString(String str) {
-		return new String(base64Decode(str), UTF8);
+		return string(base64Decode(str), UTF8);
 	}
 
 	public static byte[] base64Encode(byte[] input, boolean lineBreaks) {
-		Base64 b = lineBreaks ? new Base64(65, new byte[] { (byte) '\n' }) : new Base64();
-		return b.encode(input);
+		byte[] by = Base64.encodeBase64(input);
+		if (lineBreaks)
+			by = lineBreak(by, 65);
+		return by;
 	}
 
 	public static String base64EncodeString(byte[] input, boolean lineBreaks) {
-		return new String(base64Encode(input, lineBreaks), US_ASCII);
+		return string(base64Encode(input, lineBreaks), US_ASCII);
 	}
 
 	/*
@@ -448,7 +450,7 @@ public class Utils {
 		buff.putShort((short) 1);//asymmetric
 		buff.putInt(1);//array size
 		buff.putInt(nymID.length() + 1);
-		buff.put((nymID + '\0').getBytes(US_ASCII));
+		buff.put(bytes(nymID + '\0', US_ASCII));
 
 		// create encoded key and message
 		Cipher cipher;
@@ -458,7 +460,7 @@ public class Utils {
 			throw new RuntimeException(e);
 		}
 		cipher.init(Cipher.ENCRYPT_MODE, aesSecret, vector);
-		byte[] encrypted = cipher.doFinal((msg + '\0').getBytes(UTF8));
+		byte[] encrypted = cipher.doFinal(bytes(msg + '\0', UTF8));
 		try {
 			cipher = Cipher.getInstance("RSA");
 		} catch (Exception e) {
@@ -512,8 +514,13 @@ public class Utils {
 			int nymIDLen = buff.getInt();
 			by = new byte[nymIDLen];
 			buff.get(by);
-			String nymID = new String(by, 0, by.length - 1, Utils.US_ASCII);// take nymID W/O trailing \0
-			//TODO nymID matching!
+			String nymID;
+			try {
+				nymID = new String(by, 0, by.length - 1, Utils.US_ASCII);
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}// take nymID W/O trailing \0
+				//TODO nymID matching!
 			int keyLength = buff.getInt();
 			encKeyBytes = new byte[keyLength];
 			buff.get(encKeyBytes);
@@ -540,7 +547,11 @@ public class Utils {
 		}
 		cipher.init(Cipher.DECRYPT_MODE, aesKey, new IvParameterSpec(vectorBytes));
 		by = cipher.doFinal(encryptedMsg);
-		str = new String(by, 0, by.length - 1, Utils.UTF8);// w/o trailing \0
+		try {
+			str = new String(by, 0, by.length - 1, Utils.UTF8);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}// w/o trailing \0
 		return str;
 	}
 
@@ -559,7 +570,7 @@ public class Utils {
 			throw new RuntimeException(e);
 		}
 		String str = sw.getBuffer().toString();
-		byte[] out = pack(ByteBuffer.wrap(str.getBytes(US_ASCII)));
+		byte[] out = pack(ByteBuffer.wrap(bytes(str, US_ASCII)));
 		str = base64EncodeString(out, true);
 		return (escaped ? "- " : "") + "-----BEGIN PUBLIC KEY-----\n" + str + (escaped ? "- " : "")
 				+ "-----END PUBLIC KEY-----\n";
@@ -583,7 +594,7 @@ public class Utils {
 	}
 
 	public static String toNymID(PublicKey publicKey) {
-		return samy62(toRawPublicInfo(publicKey, true).getBytes(US_ASCII));
+		return samy62(bytes(toRawPublicInfo(publicKey, true), US_ASCII));
 	}
 
 	public static String toNymIDSource(PublicKey publicKey) {
@@ -623,7 +634,7 @@ public class Utils {
 	}
 
 	public static String sign(String unsigned, PrivateKey privateKey) throws InvalidKeyException, SignatureException {
-		byte[] samyHash = Utils.samyHash(unsigned.getBytes(Utils.UTF8));
+		byte[] samyHash = Utils.samyHash(bytes(unsigned, Utils.UTF8));
 		OTPssSignature signature = new OTPssSignature();
 		signature.initSign(privateKey);
 		signature.update(samyHash);
@@ -644,7 +655,7 @@ public class Utils {
 
 	public static Signable sign(Signable signable, PrivateKey privateKey) throws InvalidKeyException,
 			SignatureException {
-		byte[] samyHash = Utils.samyHash(signable.getUnsigned().getBytes(Utils.UTF8));
+		byte[] samyHash = Utils.samyHash(bytes(signable.getUnsigned(), Utils.UTF8));
 		OTPssSignature signature = new OTPssSignature();
 		signature.initSign(privateKey);
 		signature.update(samyHash);
@@ -670,7 +681,7 @@ public class Utils {
 
 	public static SigningSupport sign(SigningSupport signable, PrivateKey privateKey) throws InvalidKeyException,
 			SignatureException {
-		byte[] samyHash = Utils.samyHash(signable.getUnsigned().getBytes(Utils.UTF8));
+		byte[] samyHash = Utils.samyHash(bytes(signable.getUnsigned(), Utils.UTF8));
 		OTPssSignature signature = new OTPssSignature();
 		signature.initSign(privateKey);
 		signature.update(samyHash);
@@ -688,7 +699,7 @@ public class Utils {
 			InvalidKeyException, SignatureException {
 		OTPssSignature sign = new OTPssSignature();
 		sign.initVerify(publicKey);
-		byte[] by = Utils.samyHash(unsigned.getBytes(Utils.UTF8));
+		byte[] by = Utils.samyHash(bytes(unsigned, Utils.UTF8));
 		sign.update(by);
 		by = Utils.base64Decode(signature);
 		by = Utils.unpack(by, byte[].class);
@@ -831,6 +842,8 @@ public class Utils {
 	 */
 	public static void writeDirs(File file, byte[] content) throws IOException {
 		file.getParentFile().mkdirs();
+		if (!file.getParentFile().exists())
+			throw new IllegalStateException("parent directory not exist");
 		FileOutputStream fos = new FileOutputStream(file);
 		fos.write(content);
 		fos.flush();
@@ -839,5 +852,49 @@ public class Utils {
 
 	public static void writeDirs(File file, String content) throws IOException {
 		writeDirs(file, content.getBytes(UTF8));
+	}
+
+	public static byte[] bytes(String str, String charset) {
+		try {
+			return str.getBytes(charset);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static String string(byte[] by, String charset) {
+		try {
+			return new String(by, charset);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static String lineBreak(String str, int length) {
+		StringBuilder b = new StringBuilder();
+		int i = 0;
+		for (char c : str.toCharArray()) {
+			if (i == length) {
+				b.append('\n');
+				i = 0;
+			}
+			b.append(c);
+			i++;
+		}
+		return b.toString();
+	}
+
+	public static byte[] lineBreak(byte[] by, int length) {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		int i = 0;
+		for (byte b : by) {
+			if (i == length) {
+				bos.write('\n');
+				i = 0;
+			}
+			bos.write(b);
+			i++;
+		}
+		return bos.toByteArray();
 	}
 }

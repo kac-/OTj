@@ -177,8 +177,8 @@ public class EClient implements Closeable, ReqNumManager {
 			state.accountID = resp.getAccountID();
 			state.assetType = resp.getNewAccount().getAssetTypeID();
 		}
-		logger.info("init done\nnymID: {}\naccountID: {}\nassetID: {}", client.getUserAccount().getNymID(),
-				state.accountID, state.assetType);
+		logger.info("init done\nnymID: {}\naccountID: {}\nassetID: {}", new Object[] {
+				client.getUserAccount().getNymID(), state.accountID, state.assetType });
 		try {
 			Utils.writeDirs(new File(dir, nymIDFile), client.getUserAccount().getNymID());
 		} catch (IOException e) {
@@ -646,7 +646,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 		Engines.render(masterCredential, pairs.get("S").getPrivate());
 		//System.out.println(masterCredential.getSigned());
-		String masterCredentialID = Utils.samy62(masterCredential.getSigned().trim().getBytes(Utils.UTF8));// yes, trim... fuck!
+		String masterCredentialID = Utils.samy62(Utils.bytes(masterCredential.getSigned().trim(), Utils.UTF8));// yes, trim... fuck!
 		//String masterPublic = AsciiA.setString(masterCredential.getSigned());
 
 		//keyCredential w/ masterPublic
@@ -674,7 +674,7 @@ public class EClient implements Closeable, ReqNumManager {
 
 		Engines.render(keyCredential, cpairs.get("S").getPrivate());
 		//System.out.println(keyCredential.getSigned());
-		String keyCredentialID = Utils.samy62(keyCredential.getSigned().trim().getBytes(Utils.UTF8));// yes, trim... fuck!
+		String keyCredentialID = Utils.samy62(Utils.bytes(keyCredential.getSigned().trim(), Utils.UTF8));// yes, trim... fuck!
 
 		credentials = new OT.CredentialMap();
 		credentials.put(masterCredentialID, masterCredential);

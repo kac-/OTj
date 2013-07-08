@@ -65,7 +65,7 @@ import com.kactech.otj.model.BasicConnectionInfo;
 public class AdvancedUtils {
 	public static BasicConnectionInfo toConnectionInfo(OT.NotaryProviderContract notary) {
 		String endpoint = "tcp://" + notary.getNotaryServer().getHostname() + ':' + notary.getNotaryServer().getPort();
-		String id = Utils.samy62(notary.getSigned().trim().getBytes(Utils.UTF8));
+		String id = Utils.samy62(Utils.bytes(notary.getSigned().trim(), Utils.UTF8));
 		PublicKey publicKey = null;
 		String nymID = null;
 		if (notary.getSigner() != null) {

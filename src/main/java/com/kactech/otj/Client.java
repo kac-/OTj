@@ -102,7 +102,7 @@ public class Client implements Closeable {
 		bytes = transport.send(bytes);
 		if (bytes == null)
 			throw new NoResponseException();
-		String str = new String(bytes, Utils.US_ASCII);
+		String str = Utils.string(bytes, Utils.US_ASCII);
 		if (str.contains("ENVELOPE")) {
 			str = Utils.unarmor(str, false);
 			byte[] by = Utils.base64Decode(str);
@@ -197,10 +197,6 @@ public class Client implements Closeable {
 		return rmsg;
 	}
 
-	public boolean createUserAccount() {
-		return createUserAccountNew().getSuccess();
-	}
-
 	public MSG.CreateUserAccountResp createUserAccountNew(OT.User credentialList, OT.CredentialMap credentials) {
 		MSG.CreateUserAccount req = new MSG.CreateUserAccount();
 		req.setNymID(userAccount.getNymID());
@@ -210,77 +206,6 @@ public class Client implements Closeable {
 		req.setCredentialList(new MSG.AsciiEntity<OT.User>(credentialList));
 		req.setCredentials(credentials);
 		return send(new MSG.Message().set(req)).getCreateUserAccountResp();
-	}
-
-	@Deprecated
-	public MSG.CreateUserAccountResp createUserAccountNew() {
-		Map<String, KeyPair> pairs, cpairs;
-		pairs = getUserAccount().getPairs();
-		cpairs = getUserAccount().getCpairs();
-
-		OT.User credentialList = new OT.User();
-		OT.CredentialMap credentials = new OT.CredentialMap();
-
-		String nymIDSource = userAccount.getNymIDSource();
-		String nymID = userAccount.getNymID();
-		//System.out.println(nymIDSource);
-		//System.out.println(nymID);
-		OT.MasterCredential masterCredential = new OT.MasterCredential();
-		masterCredential.setNymID(nymID);
-		masterCredential.setNymIDSource(new OT.ArmoredString(nymIDSource));
-		OT.PublicContents publicContents = new OT.PublicContents();
-		publicContents.setPublicInfos(new ArrayList<OT.KeyValue>());
-		for (Entry<String, String> e : getUserAccount().getSources().entrySet())
-			publicContents.getPublicInfos().add(new OT.KeyValue(e.getKey(), e.getValue()));
-		publicContents.setCount(3);
-
-		masterCredential.setPublicContents(publicContents);
-
-		Engines.render(masterCredential, pairs.get("S").getPrivate());
-		//System.out.println(masterCredential.getSigned());
-		String masterCredentialID = Utils.samy62(masterCredential.getSigned().trim().getBytes(Utils.UTF8));// yes, trim... fuck!
-		//String masterPublic = AsciiA.setString(masterCredential.getSigned());
-
-		//keyCredential w/ masterPublic
-		OT.KeyCredential masterSigned = new OT.KeyCredential();
-		masterSigned.setNymID(nymID);
-		masterSigned.setNymIDSource(new OT.ArmoredString(nymIDSource));
-		masterSigned.setMasterCredentialID(masterCredentialID);
-		masterSigned.setMasterPublic(masterCredential);
-		publicContents = new OT.PublicContents();
-		publicContents.setPublicInfos(new ArrayList<OT.KeyValue>());
-		for (Entry<String, String> e : getUserAccount().getCsources().entrySet())
-			publicContents.getPublicInfos().add(new OT.KeyValue(e.getKey(), e.getValue()));
-		publicContents.setCount(3);
-
-		masterSigned.setPublicContents(publicContents);
-
-		Engines.render(masterSigned, pairs.get("S").getPrivate());
-		//System.out.println(keyCredentialP.getSigned());
-
-		OT.KeyCredential keyCredential = new OT.KeyCredential();
-		keyCredential.setNymID(nymID);
-		keyCredential.setNymIDSource(new OT.ArmoredString(nymIDSource));
-		keyCredential.setMasterCredentialID(masterCredentialID);
-		keyCredential.setMasterSigned(masterSigned);
-
-		Engines.render(keyCredential, cpairs.get("S").getPrivate());
-		//System.out.println(keyCredential.getSigned());
-		String keyCredentialID = Utils.samy62(keyCredential.getSigned().trim().getBytes(Utils.UTF8));// yes, trim... fuck!
-
-		credentials = new OT.CredentialMap();
-		credentials.put(masterCredentialID, masterCredential);
-		credentials.put(keyCredentialID, keyCredential);
-
-		credentialList = new OT.User();
-		credentialList.setNymID(nymID);
-		credentialList.setNymIDSource(new OT.ArmoredString(nymIDSource));
-		credentialList.setMasterCredential(new OT.CredentialIdentifier(masterCredentialID, null, true));
-		credentialList.setKeyCredential(new OT.CredentialIdentifier(keyCredentialID, masterCredentialID, true));
-
-		//RequestTemplates
-		//nym.setVersion(new OT.Version("1.0"));
-		return createUserAccountNew(credentialList, credentials);
 	}
 
 	public MSG.CheckUserResp checkUser(String nymID) {
