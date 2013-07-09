@@ -54,23 +54,22 @@ import java.io.File;
 
 import org.junit.Test;
 
-import com.kactech.otj.Client;
-import com.kactech.otj.EClient;
-import com.kactech.otj.Utils;
 import com.kactech.otj.examples.ExamplesUtils;
 
 public class EClientBasicTests {
 	@Test
 	public void t0() throws Exception {
-		Client.DEBUG_JSON = true;
+		Client.DEBUG_JSON = false;
 		Utils.init();
 		File dir = new File("client");
+		new File(dir, "userAccount.json").delete();
 		System.out.println("client dir: " + dir);
-		EClient client = new EClient(dir, ExamplesUtils.findServer("Tran"));
+		EClient client = new EClient(dir, ExamplesUtils.findServer("OT"));
 		client.setAssetType(ExamplesUtils.findAsset("silver").assetID);
+
 		client.init();
 
-		client.processInbox();
+		//client.processInbox();
 
 		client.saveState();
 		client.close();
