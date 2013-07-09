@@ -62,6 +62,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+		<!-- 
+		<bc.group>org.bouncycastle</bc.group>
+		<bc.prefix>bc</bc.prefix>
+		<bc.version>1.47</bc.version>
+		 -->
 		<bc.group>com.madgag</bc.group>
 		<bc.prefix>sc</bc.prefix>
 		<bc.version>1.47.0.2</bc.version>
@@ -132,6 +137,9 @@
 					<scope>test</scope>
 				</dependency>
 			</dependencies>
+			<properties>
+				<name.suffix></name.suffix>
+			</properties>
 		</profile>
 		<profile>
 			<id>android</id>
@@ -144,6 +152,10 @@
 			</dependencies>
 			<properties>
 				<name.suffix>-android</name.suffix>
+				
+				<bc.group>com.madgag</bc.group>
+				<bc.prefix>sc</bc.prefix>
+				<bc.version>1.47.0.2</bc.version>
 			</properties>
 		</profile>
 	</profiles>

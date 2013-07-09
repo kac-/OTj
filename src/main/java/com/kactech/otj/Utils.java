@@ -130,6 +130,7 @@ public class Utils {
 	private static final Utils _it = new Utils();
 	public static final String US_ASCII = "US-ASCII";
 	public static final String UTF8 = "UTF-8";
+	static final String WRAP_ALGO = "RSA/ECB/PKCS1Padding";
 
 	/*
 	 * ascii armor handling
@@ -462,7 +463,7 @@ public class Utils {
 		cipher.init(Cipher.ENCRYPT_MODE, aesSecret, vector);
 		byte[] encrypted = cipher.doFinal(bytes(msg + '\0', UTF8));
 		try {
-			cipher = Cipher.getInstance("RSA");
+			cipher = Cipher.getInstance(WRAP_ALGO);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -534,7 +535,7 @@ public class Utils {
 
 		Cipher cipher;
 		try {
-			cipher = Cipher.getInstance("RSA");
+			cipher = Cipher.getInstance(WRAP_ALGO);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
