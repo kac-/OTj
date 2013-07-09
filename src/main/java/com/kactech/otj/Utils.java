@@ -870,20 +870,6 @@ public class Utils {
 		}
 	}
 
-	public static String lineBreak(String str, int length) {
-		StringBuilder b = new StringBuilder();
-		int i = 0;
-		for (char c : str.toCharArray()) {
-			if (i == length) {
-				b.append('\n');
-				i = 0;
-			}
-			b.append(c);
-			i++;
-		}
-		return b.toString();
-	}
-
 	public static byte[] lineBreak(byte[] by, int length) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		int i = 0;
@@ -895,6 +881,8 @@ public class Utils {
 			bos.write(b);
 			i++;
 		}
+		if (i > 0)
+			bos.write('\n');//bugFix? hehe
 		return bos.toByteArray();
 	}
 }
