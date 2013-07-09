@@ -52,11 +52,11 @@ package com.kactech.otj;
 
 import java.io.IOException;
 
-import org.zeromq.ZContext;
-import org.zeromq.ZMQ;
-import org.zeromq.ZMsg;
-import org.zeromq.ZMQ.PollItem;
-import org.zeromq.ZMQ.Socket;
+import org.jeromq.ZContext;
+import org.jeromq.ZMQ;
+import org.jeromq.ZMQ.PollItem;
+import org.jeromq.ZMQ.Socket;
+import org.jeromq.ZMsg;
 
 public class JeromqTransport implements Transport {
 	String endpoint;
@@ -102,7 +102,7 @@ public class JeromqTransport implements Transport {
 	@Override
 	public void close() throws IOException {
 		if (this.ctx != null) {
-			this.ctx.close();
+			this.ctx.destroy();
 			this.ctx = null;
 			this.socket = null;
 		}
