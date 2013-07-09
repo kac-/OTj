@@ -113,6 +113,7 @@ public class EClient implements Closeable, ReqNumManager {
 	@SuppressWarnings("unchecked")
 	public void init() {
 		this.dir.mkdirs();
+		boolean newUserAccount = false;
 		// user account
 		UserAccount uacc = null;
 		try {
@@ -124,6 +125,7 @@ public class EClient implements Closeable, ReqNumManager {
 		if (uacc == null) {
 			logger.info("creating local user account");
 			uacc = new BasicUserAccount().generate();
+			newUserAccount = true;
 			try {
 				Utils.writeDirs(new File(dir, userAccountFile), Engines.gson.toJson(uacc));
 			} catch (IOException e) {
@@ -133,12 +135,13 @@ public class EClient implements Closeable, ReqNumManager {
 		}
 
 		// state
-		try {
-			state = Engines.gson.fromJson(Utils.read(new File(dir, stateFile)), State.class);
-			logger.info("state loaded");
-		} catch (Exception e) {
-			logger.warn("loading state: {}", e.toString());
-		}
+		if (!newUserAccount)
+			try {
+				state = Engines.gson.fromJson(Utils.read(new File(dir, stateFile)), State.class);
+				logger.info("state loaded");
+			} catch (Exception e) {
+				logger.warn("loading state: {}", e.toString());
+			}
 		if (state == null) {
 			logger.info("creating new state");
 			state = new State();

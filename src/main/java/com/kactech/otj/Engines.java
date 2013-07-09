@@ -82,6 +82,9 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.converters.reflection.FieldDictionary;
+import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
+import com.thoughtworks.xstream.converters.reflection.SortableFieldKeySorter;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
@@ -141,7 +144,15 @@ public class Engines {
 				return new PrettyPrintWriterNewlineAttribute(out, new char[] {});//empty lineIndentier
 			}
 		};
-		xstream = new XStream(driver);
+
+		SortableFieldKeySorter fieldKeySorter = new SortableFieldKeySorter();
+		fieldKeySorter.registerFieldOrder(OT.User.class, new String[] { "nymID", "version", "transactionNums",
+				"issuedNums", "nymIDSource", "requestNum", "assetAccounts", "nymboxHash", "masterCredential",
+				"keyCredential", });
+		FieldDictionary fieldDictionary = new FieldDictionary(fieldKeySorter);
+		PureJavaReflectionProvider reflectionProvider = new PureJavaReflectionProvider(fieldDictionary);
+
+		xstream = new XStream(reflectionProvider, driver);
 		//xstream.aliasAttribute(OT.Item.class, "accountID", "fromAccountID");
 
 		//xstream.processAnnotations(OT.TransactionType.class);

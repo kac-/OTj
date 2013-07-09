@@ -1069,8 +1069,9 @@ public class OT {
 		@XStreamImplicit(itemFieldName = "ownsAssetAcct")
 		List<Identifier> assetAccounts;
 		Hash nymboxHash;
-		CredentialIdentifier masterCredential;
+		//CredentialIdentifier masterCredential;
 		CredentialIdentifier keyCredential;
+		CredentialIdentifier masterCredential;//emulate android ordering
 
 		@Override
 		public String toString() {
