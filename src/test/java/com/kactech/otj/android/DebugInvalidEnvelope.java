@@ -2,16 +2,21 @@ package com.kactech.otj.android;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.PublicKey;
 
 import org.jeromq.ZContext;
 import org.jeromq.ZMQ;
 import org.jeromq.ZMQ.Socket;
 import org.jeromq.ZMsg;
+import org.junit.Test;
 
 import com.kactech.otj.Engines;
+import com.kactech.otj.MSG;
+import com.kactech.otj.OT;
 import com.kactech.otj.Utils;
 import com.kactech.otj.examples.ExamplesUtils;
 import com.kactech.otj.model.BasicConnectionInfo;
+import com.kactech.otj.model.SigningSupport;
 
 public class DebugInvalidEnvelope {
 	//@Test
@@ -63,5 +68,25 @@ public class DebugInvalidEnvelope {
 		BasicConnectionInfo bci = new BasicConnectionInfo("123", kp.getPublic(), "tcp://192.168.1.111:7089");
 		System.out.println(Engines.gson.toJson(bci));
 		System.out.println(Engines.gson.toJson(ExamplesUtils.getServers()));
+	}
+	/*
+==> Received a createUserAccount message. Nym: xOBROITUzXs4IxqpsTWvSxehX4mVGmk8viUtV5l6h4n ...
+LoadFromString: While loading keyCredential, failed trying to find expected Master Credential ID: hP9ajU2BNQqqNM07jeofDQSGxalggq8mVuON8B4D9CS
+ProcessUserCommand: @createUserAccount: Failure loading nym xOBROITUzXs4IxqpsTWvSxehX4mVGmk8viUtV5l6h4n from credential string.
+Failure loading public credentials for Nym: xOBROITUzXs4IxqpsTWvSxehX4mVGmk8viUtV5l6h4n
+ProcessMessage_ZMQ: Unable to process user command: createUserAccount
+	 */
+	@Test
+	public void d3() throws Exception {
+		Utils.init();
+		String s;
+		SigningSupport ss = Engines.parse(Utils.read("testData","android","invalidCreateUserAccount-1.txt"));
+		System.out.println(ss);
+		MSG.CreateUserAccount cua = ((MSG.Message)ss).getCreateUserAccount();
+		OT.User user = cua.getCredentialList().getEntity();
+		System.out.println(Engines.gson.toJson(cua));
+		s = cua.getCredentialList().getEntity().getNymIDSource().getUnarmored();
+		PublicKey publicKey = Utils.fromRawPublicInfo(s, true);
+		System.out.println(Utils.toNymID(publicKey));
 	}
 }
