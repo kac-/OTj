@@ -64,10 +64,10 @@ public class BasicConnectionInfo implements ConnectionInfo {
 	}
 
 	public BasicConnectionInfo(String id, PublicKey publicKey, String endpoint, String nymID) {
-		this(publicKey, endpoint, id, nymID, null);
+		this(id, publicKey, endpoint, nymID, null);
 	}
 
-	public BasicConnectionInfo(PublicKey publicKey, String endpoint, String id, String nymID, String name) {
+	public BasicConnectionInfo(String id, PublicKey publicKey, String endpoint, String nymID, String name) {
 		super();
 		this.publicKey = publicKey;
 		this.endpoint = endpoint;

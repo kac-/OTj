@@ -296,7 +296,7 @@ public class Utils {
 	public static X509Certificate readX509Certificate(byte[] certContent) {
 		X509StreamParser parser;
 		try {
-			parser = X509StreamParser.getInstance("Certificate", "BC");
+			parser = X509StreamParser.getInstance("Certificate", "SC");
 			parser.init(certContent);
 			X509Certificate cert = (X509Certificate) parser.read();
 			return cert;
@@ -325,13 +325,7 @@ public class Utils {
 		byte[] out = new byte[l];
 		for (int i = 0; i < out.length; i++)
 			out[i] = (byte) (digA[i] ^ digB[i]);
-		if (true) {
-			return out;
-		} else {
-			BigInteger biA = new BigInteger(Arrays.copyOf(digA, l));
-			BigInteger biB = new BigInteger(Arrays.copyOf(digB, l));
-			return biA.xor(biB).toByteArray();
-		}
+		return out;
 	}
 
 	public static String samy62(File file) throws IOException {

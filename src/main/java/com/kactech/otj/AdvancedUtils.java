@@ -64,6 +64,7 @@ import com.kactech.otj.model.BasicConnectionInfo;
 
 public class AdvancedUtils {
 	public static BasicConnectionInfo toConnectionInfo(OT.NotaryProviderContract notary) {
+		String name = notary.getEntity().getShortname();
 		String endpoint = "tcp://" + notary.getNotaryServer().getHostname() + ':' + notary.getNotaryServer().getPort();
 		String id = Utils.samy62(Utils.bytes(notary.getSigned().trim(), Utils.UTF8));
 		PublicKey publicKey = null;
@@ -88,10 +89,11 @@ public class AdvancedUtils {
 					byte[] certBytes = Utils.base64Decode(value);
 					X509Certificate cert = Utils.readX509Certificate(certBytes);
 					publicKey = cert.getPublicKey();
+					nymID = Utils.toNymID(publicKey);
 				}
 			}
 		}
-		return new BasicConnectionInfo(id, publicKey, endpoint, nymID);
+		return new BasicConnectionInfo(id, publicKey, endpoint, nymID, name);
 	}
 
 	public static char[] getMasterPassword(OT.SymmetricKey cachedKey, String password) {
