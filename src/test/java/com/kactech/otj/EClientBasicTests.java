@@ -55,6 +55,7 @@ import java.io.File;
 import org.junit.Test;
 
 import com.kactech.otj.examples.ExamplesUtils;
+import com.kactech.otj.examples.IncomingTransfrerFilter;
 
 public class EClientBasicTests {
 	@Test
@@ -62,14 +63,20 @@ public class EClientBasicTests {
 		Client.DEBUG_JSON = false;
 		Utils.init();
 		File dir = new File("client");
-		new File(dir, "userAccount.json").delete();
+		//new File(dir, "userAccount.json").delete();
 		System.out.println("client dir: " + dir);
 		EClient client = new EClient(dir, ExamplesUtils.findServer("OT"));
 		client.setAssetType(ExamplesUtils.findAsset("silver").assetID);
 
 		client.init();
 
-		//client.processInbox();
+		IncomingTransfrerFilter itf = new IncomingTransfrerFilter();
+		client.getClient().addFilter((Client.Filter) itf, MSG.ProcessInboxResp.class, 0);
+		client.getClient().addFilter((Client.Filter) itf, MSG.GetInboxResp.class, 0);
+
+		client.processInbox();
+
+		System.out.println(itf.getAndClearAcknowledged());
 
 		client.saveState();
 		client.close();
