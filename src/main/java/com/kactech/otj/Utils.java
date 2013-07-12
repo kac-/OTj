@@ -119,6 +119,7 @@ import com.kactech.otj.model.Signed;
 import com.kactech.otj.model.SigningSupport;
 
 public class Utils {
+	public static int BUFFERED_READER_SIZE = 1024;
 	private static boolean _init = true;
 
 	public static void init() {
@@ -709,7 +710,7 @@ public class Utils {
 		if (signed == null)
 			signed = new BasicSigned();
 		signed.setRaw(content);
-		BufferedReader r = new BufferedReader(new StringReader(content));
+		BufferedReader r = new BufferedReader(new StringReader(content), BUFFERED_READER_SIZE);
 
 		String line;
 		BasicOTSignature sign = null;

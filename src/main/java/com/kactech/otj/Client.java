@@ -53,12 +53,9 @@ package com.kactech.otj;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +65,7 @@ import com.kactech.otj.model.UserAccount;
 public class Client implements Closeable {
 	static final Logger logger = LoggerFactory.getLogger(Client.class);
 	public static boolean DEBUG_JSON = false;
+	public static boolean DEBUG_RAW = false;
 	UserAccount userAccount;
 	String serverID;
 	String serverNymID;
@@ -184,7 +182,7 @@ public class Client implements Closeable {
 		Engines.render(msg, getUserAccount().getCpairs().get("A").getPrivate());
 		if (DEBUG_JSON)
 			logger.debug("\n{\"status\": \"request\", \"message\":\n{}},", Engines.gson.toJson(msg));
-		else
+		else if (DEBUG_RAW)
 			logger.debug("\n{}", msg.getSigned());
 		String signed = send_s(msg.getSigned());
 		MSG.Message rmsg = new MSG.Message();
@@ -192,7 +190,7 @@ public class Client implements Closeable {
 		Engines.parse(rmsg);
 		if (DEBUG_JSON)
 			logger.debug("\n{\"status\": \"response\", \"message\":\n{}},", Engines.gson.toJson(rmsg));
-		else
+		else if (DEBUG_RAW)
 			logger.debug("\n{}", signed);
 		return rmsg;
 	}

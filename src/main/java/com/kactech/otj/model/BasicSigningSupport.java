@@ -56,6 +56,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.kactech.otj.Utils;
 import com.kactech.otj.model.annot.GsonExclude;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
@@ -145,7 +146,7 @@ public class BasicSigningSupport implements SigningSupport {
 			throw new IllegalStateException("signed == null");
 		setSigned(signed);//reset
 		this.signatures = new ArrayList<OTSignature>();
-		BufferedReader r = new BufferedReader(new StringReader(signed));
+		BufferedReader r = new BufferedReader(new StringReader(signed), Utils.BUFFERED_READER_SIZE);
 
 		String line;
 		BasicOTSignature sign = null;
