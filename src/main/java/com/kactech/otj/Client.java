@@ -295,7 +295,8 @@ public class Client implements Closeable {
 		req.setServerID(serverID);
 		req.setRequestNum(getRequest());
 		req.setAccountID(accountID);
-		return send(new MSG.Message().set(req)).getGetInboxResp();
+		req = filter(req);
+		return filter(send(new MSG.Message().set(req)).getGetInboxResp());
 	}
 
 	public MSG.GetOutboxResp getOutbox(String accountID) {
@@ -334,7 +335,8 @@ public class Client implements Closeable {
 		req.setAccountID(ledger.getAccountID());
 		req.setNymboxHash(nymboxHash);
 		req.setProcessLedger(ledger);
-		return send(new MSG.Message().set(req)).getProcessInboxResp();
+		req = filter(req);
+		return filter(send(new MSG.Message().set(req)).getProcessInboxResp());
 	}
 
 	public MSG.NotarizeTransactionsResp notarizeTransaction(OT.Ledger accountLedger, String nymboxHash) {

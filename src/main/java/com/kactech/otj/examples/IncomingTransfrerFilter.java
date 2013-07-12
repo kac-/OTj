@@ -51,50 +51,70 @@
 package com.kactech.otj.examples;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import com.kactech.otj.Client;
 import com.kactech.otj.MSG;
-import com.kactech.otj.MSG.GetBoxReceiptResp;
-import com.kactech.otj.MSG.GetNymboxResp;
 import com.kactech.otj.OT;
-import com.kactech.otj.Utils;
+import com.kactech.otj.OT.Transaction.Type;
 
-public class UserMessagesFilter implements Client.Filter<MSG.GetNymboxResp> {
+public class IncomingTransfrerFilter implements Client.Filter<Object> {
+	public static class Tx {
+		public Long date;
+		public String account;
+		public Long amount;
 
-	public static class UserMessage {
-		public String from;
-		public String text;
+		@Override
+		public String toString() {
+			return "Tx [date=" + date + ", account=" + account + ", amount=" + amount + "]";
+		}
+
 	}
 
-	Map<Long, UserMessage> messages = new LinkedHashMap<Long, UserMessage>();
+	Map<Long, Tx> pending = new TreeMap<Long, IncomingTransfrerFilter.Tx>();
+
+	Map<Long, Tx> acknowleded = new TreeMap<Long, IncomingTransfrerFilter.Tx>();
 
 	@Override
-	public GetNymboxResp filter(GetNymboxResp obj, Client client) {
-		try {
-			for (OT.BoxRecord rec : obj.getNymboxLedger().getNymboxRecords())
-				if (rec.getType() == OT.Transaction.Type.message) {
-					GetBoxReceiptResp receipt = client.getBoxReceipt(obj.getNymID(), obj
-							.getNymboxLedger()
-							.getType(), rec.getTransactionNum());
-					OT.Transaction box = receipt.getBoxReceipt();
-					MSG.SendUserMessage send = ((MSG.Message) box.getInReferenceToContent())
-							.getSendUserMessage();
+	public Object filter(Object obj, Client client) {
+		if (obj instanceof MSG.GetInboxResp) {
+			MSG.GetInboxResp gir = (MSG.GetInboxResp) obj;
+			if (!gir.getSuccess() || gir.getInboxLedger().getNumPartialRecords() == 0)
+				return obj;
+			//System.out.println(Engines.gson.toJson(obj));
+			for (OT.BoxRecord rec : gir.getInboxLedger().getInboxRecords())
+				if (rec.getType() == Type.pending) {
+					MSG.GetBoxReceiptResp boxResp = client.getBoxReceipt(gir.getAccountID(),
+							gir.getInboxLedger().getType(), rec.getTransactionNum());
+					OT.Item it = (OT.Item) boxResp.getBoxReceipt().getInReferenceToContent();
+					Tx tx = new Tx();
+					tx.amount = it.getAmount();
+					tx.account = it.getFromAccountID();
+					tx.date = boxResp.getBoxReceipt().getDateSigned();
+					pending.put(it.getTransactionNum(), tx);
+					//System.out.println(Engines.gson.toJson(boxResp));
 
-					byte[] data = send.getMessagePayload().getData();
-					try {
-						UserMessage umsg = new UserMessage();
-						umsg.from = send.getNymID();
-						umsg.text = Utils.open(data, client.getUserAccount().getCpairs().get("E")
-								.getPrivate());
-						messages.put(rec.getTransactionNum(), umsg);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
 				}
-		} catch (Exception ex) {
+		} else if (obj instanceof MSG.ProcessInboxResp) {
+			MSG.ProcessInboxResp pir = (MSG.ProcessInboxResp) obj;
+			if (!pir.getSuccess())
+				return obj;
+			//System.out.println(Engines.gson.toJson(obj));
+			List<Long> acknowledged = new ArrayList<Long>();
+			for (OT.Item item : pir.getResponseLedger().getTransactions().get(0).getItems())
+				if (item.getType() == OT.Item.Type.atBalanceStatement
+						&& item.getStatus() != OT.Item.Status.acknowledgement)
+					return obj;
+				else if (item.getType() == OT.Item.Type.atAcceptPending
+						&& item.getStatus() == OT.Item.Status.acknowledgement) {
+					acknowledged.add(item.getNumberOfOrigin());
+				}
+			for (Long l : acknowledged) {
+				Tx tx = pending.remove(l);
+				this.acknowleded.put(tx.date, tx);
+			}
 		}
 		return obj;
 	}
@@ -104,9 +124,9 @@ public class UserMessagesFilter implements Client.Filter<MSG.GetNymboxResp> {
 		return Client.EVENT_STD;
 	}
 
-	public List<UserMessage> getAndClearMessages() {
-		List<UserMessage> msgs = new ArrayList<UserMessage>(messages.values());
-		messages.clear();
-		return msgs;
+	public List<Tx> getAndClearAcknowledged() {
+		List<Tx> l = new ArrayList<Tx>(this.acknowleded.values());
+		this.acknowleded.clear();
+		return l;
 	}
 }
