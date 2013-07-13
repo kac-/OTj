@@ -101,74 +101,25 @@
 			<artifactId>xstream</artifactId>
 			<version>1.4.4</version>
 		</dependency>
+
+		<!-- exclude it in android projects and add slf4j-android -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.1</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
-	<profiles>
-		<profile>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-					<version>1.6.1</version>
-				</dependency>
-				
-				<dependency>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-log4j12</artifactId>
-					<version>1.6.1</version>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
-			<properties>
-				<name.suffix></name.suffix>
-			</properties>
-		</profile>
-		<profile>
-			<id>android</id>
-			<dependencies>
-				<dependency>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-android</artifactId>
-					<version>1.6.1-RC1</version>
-				</dependency>
-			</dependencies>
-			<properties>
-				<name.suffix>-android</name.suffix>
-				
-				<bc.group>com.madgag</bc.group>
-				<bc.prefix>sc</bc.prefix>
-				<bc.version>1.47.0.2</bc.version>
-			</properties>
-		</profile>
-	</profiles>
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<configuration>
-					<finalName>${project.artifactId}-wdeps${name.suffix}-${project.version}</finalName>
-					<appendAssemblyId>false</appendAssemblyId>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
 </project>
