@@ -220,8 +220,8 @@ public class Faucet {
 
 	public static void main(String[] args) throws Exception {
 		String channel =
-				//"#opentransactions"
-				"#kactech_test"
+				"#opentransactions"
+				//"#kactech_test"
 		//
 		;
 		CommandLineParser parser = new GnuParser();
