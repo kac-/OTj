@@ -1,0 +1,38 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentLeft="true"
+    android:layout_alignParentTop="true"
+    android:orientation="vertical"
+    tools:context=".NewTransaction" >
+
+    <Button
+        android:id="@+id/new_tx_pick"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="pick" />
+
+    <EditText
+        android:id="@+id/new_tx_account"
+        android:layout_width="238dp"
+        android:layout_height="wrap_content" >
+
+        <requestFocus />
+    </EditText>
+
+    <EditText
+        android:id="@+id/new_tx_amount"
+        android:layout_width="97dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="number" />
+    
+    <Button
+        android:id="@+id/new_tx_send"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="send" />
+
+</LinearLayout>
+

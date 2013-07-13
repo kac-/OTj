@@ -82,5 +82,6 @@
 	<modules>
 		<module>core</module>
 		<module>more</module>
+		<module>andro</module>
 	</modules>
 </project>
