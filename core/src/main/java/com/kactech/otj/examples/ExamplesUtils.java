@@ -164,11 +164,11 @@ public class ExamplesUtils {
 				"https://raw.github.com/stretch/OT-BitcoinServer/master/test-contracts/SERVER-vanbtc.otc");
 		// OT 8coin
 		contractsURI.put("8bPtJo8pmJ5eG992ccbfrl06DsDi6aqxr7fNhAK2PuW",
-				"https://raw.github.com/kactech/OTj/master/sample-data/SERVER-ot.8coin.org.otc");
+				"http://bit.ly/12o2JSM");
 		// silver grams asset
 		contractsURI
 				.put("JY7kEFnm2c50CGNphdpgnlVo2hOZuLrBua5cFqWWR9Q",
-						"https://raw.github.com/FellowTraveler/Open-Transactions/master/sample-data/sample-contracts/silver.otc");
+						"http://bit.ly/14Q087h");
 		// kactech LOC
 		contractsURI
 				.put("3SSQuTikpv7H9KlPNvnJ5ttmjqIwQc60ySvoXfYRBc8",
