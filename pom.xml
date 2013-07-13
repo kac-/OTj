@@ -81,5 +81,6 @@
 	</repositories>
 	<modules>
 		<module>core</module>
+		<module>more</module>
 	</modules>
 </project>
