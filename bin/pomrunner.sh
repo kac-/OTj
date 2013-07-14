@@ -60,7 +60,7 @@ if [ ! -e $CPF ] || [ $CPF -ot pom.xml ] ; then
 		echo "building classpath complete"
 	else
 		echo "ERROR cannot build classpath"
-		return -1
+		exit -1
 	fi
 fi
 BCP=`cat $CPF`

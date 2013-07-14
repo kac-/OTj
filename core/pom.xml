@@ -59,7 +59,6 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>otj-core</artifactId>
-	<version>${parent.version}</version>
 	<dependencies>
 		<dependency>
 			<groupId>commons-codec</groupId>

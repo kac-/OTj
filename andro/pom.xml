@@ -60,7 +60,6 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>otj-andro</artifactId>
-	<version>${parent.version}</version>
 	<packaging>apk</packaging>
 
 	<properties>
