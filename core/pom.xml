@@ -1,0 +1,136 @@
+<!--
+               OTj
+  Low-level client-side library for Open Transactions in Java
+  
+  Copyright (C) 2013 by Piotr Kopeć (kactech)
+  
+  EMAIL:
+  pepe.kopec@gmail.com
+  
+  BITCOIN: 1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp
+  
+  OFFICIAL PROJECT PAGE:
+  https://github.com/kactech/OTj
+  
+  ****************************************************
+  
+  LICENSE:
+  This program is free software: you can redistribute it
+  and/or modify it under the terms of the GNU Affero
+  General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your
+  option) any later version.
+  
+  ADDITIONAL PERMISSION under the GNU Affero GPL version 3
+  section 7: If you modify this Program, or
+  any covered work, by linking or combining it with other
+  code, such other code is not for that reason alone subject
+  to any of the requirements of the GNU Affero GPL version 3.
+  (==> This means if you are only using the OTj, then you
+  don't have to open-source your code-only your changes to
+  OTj itself must be open source. Similar to
+  LGPLv3, except it applies to software-as-a-service, not
+  just to distributing binaries.)
+  Anyone using my library is given additional permission
+  to link their software with any BSD-licensed code.
+  
+  ****************************************************
+  
+  You should have received a copy of the GNU Affero General
+  Public License along with this program. If not, see:
+  http://www.gnu.org/licenses/
+  
+  If you would like to use this software outside of the free
+  software license, please contact Piotr Kopeć.
+  
+  DISCLAIMER:
+  This program is distributed in the hope that it will be
+  useful, but WITHOUT ANY WARRANTY; without even the implied
+  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE. See the GNU Affero General Public License for
+  more details.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<groupId>com.kactech.otj</groupId>
+		<artifactId>otj-parent</artifactId>
+		<version>0.89.g-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>otj-core</artifactId>
+	<dependencies>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>2.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>${bc.group}</groupId>
+			<artifactId>${bc.prefix}prov-jdk15on</artifactId>
+			<version>${bc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${bc.group}</groupId>
+			<artifactId>${bc.prefix}pg-jdk15on</artifactId>
+			<version>${bc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${bc.group}</groupId>
+			<artifactId>${bc.prefix}pkix-jdk15on</artifactId>
+			<version>${bc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jeromq</groupId>
+			<artifactId>jeromq-android7</artifactId>
+			<version>0.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thoughtworks.xstream</groupId>
+			<artifactId>xstream</artifactId>
+			<version>1.4.4</version>
+		</dependency>
+
+		<!-- exclude it in android projects and add slf4j-android -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.15</version>
+				<configuration>
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
