@@ -50,4 +50,6 @@
 #   more details.
 #############################################################
 
-$(dirname $0)/pomrunner.sh com.kactech.otj.examples.gui.OTjAlpha
+DIR=$(dirname $(readlink -f $0))
+cd $DIR/../more
+$DIR/pomrunner.sh com.kactech.otj.examples.gui.OTjAlpha

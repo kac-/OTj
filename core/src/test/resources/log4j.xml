@@ -1,16 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <!--
                OTj
   Low-level client-side library for Open Transactions in Java
   
   Copyright (C) 2013 by Piotr Kopeć (kactech)
   
-  EMAIL:
-  pepe.kopec@gmail.com
+  EMAIL: pepe.kopec@gmail.com
   
   BITCOIN: 1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp
   
-  OFFICIAL PROJECT PAGE:
-  https://github.com/kactech/OTj
+  OFFICIAL PROJECT PAGE: https://github.com/kactech/OTj
   
   ****************************************************
   
@@ -27,7 +26,7 @@
   code, such other code is not for that reason alone subject
   to any of the requirements of the GNU Affero GPL version 3.
   (==> This means if you are only using the OTj, then you
-  don't have to open-source your code-only your changes to
+  don't have to open-source your code- only your changes to
   OTj itself must be open source. Similar to
   LGPLv3, except it applies to software-as-a-service, not
   just to distributing binaries.)
@@ -50,39 +49,40 @@
   PURPOSE. See the GNU Affero General Public License for
   more details.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.kactech.otj</groupId>
-	<artifactId>otj-parent</artifactId>
-	<version>0.89.g-SNAPSHOT</version>
-	<packaging>pom</packaging>
-	<properties>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j='http://jakarta.apache.org/log4j/'>
+	<appender name="console" class="org.apache.log4j.ConsoleAppender">
+		<param name="threshold" value="info" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%-4r [%t] %-5p %c %x - %m%n" />
+		</layout>
+	</appender>
+	<appender name="file" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="threshold" value="info" />
+		<param name="file" value="log.txt" />
+		<param name="datePattern" value="'.'yyyy-MM-dd" />
+		<param name="append" value="true" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d [%t] %-5p %C{6} (%F:%L) - %m%n" />
+		</layout>
+	</appender>
+	<appender name="debugFile" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="threshold" value="debug" />
+		<param name="file" value="debug.txt" />
+		<param name="datePattern" value="'.'yyyy-MM-dd" />
+		<param name="append" value="true" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d [%t] %-5p %C{6} (%F:%L) - %m%n" />
+		</layout>
+	</appender>
 
-		<bc.group>com.madgag</bc.group>
-		<bc.prefix>sc</bc.prefix>
-		<bc.version>1.47.0.2</bc.version>
-	</properties>
-	<repositories>
-		<repository>
-			<id>sonatype-nexus-snapshots</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-	<modules>
-		<module>core</module>
-		<module>more</module>
-		<module>andro</module>
-		<module>faucet</module>
-	</modules>
-</project>
+	<logger name="com.kactech.otj">
+		<level value="debug" />
+		<appender-ref ref="debugFile" />
+	</logger>
+	<root>
+		<level value="info" />
+		<appender-ref ref="console" />
+		<appender-ref ref="file" />
+	</root>
+</log4j:configuration>
