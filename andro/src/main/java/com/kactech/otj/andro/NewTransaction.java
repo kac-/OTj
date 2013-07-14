@@ -4,19 +4,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.TreeSet;
 
-import com.example.android.skeletonapp.R;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.example.android.skeletonapp.R;
 
 public class NewTransaction extends Activity {
 	static final int PICK = 100008;
@@ -61,10 +62,16 @@ public class NewTransaction extends Activity {
 				new Thread() {
 					@Override
 					public void run() {
-						Looper.prepare();
-						((OTjApplication) getApplication()).send(acc, amount);
-						dialog.dismiss();
-						onBackPressed();
+						final String ret = ((OTjApplication) getApplication()).send(acc, amount);
+						runOnUiThread(new Runnable() {
+							public void run() {
+								dialog.dismiss();
+								Toast toast = Toast.makeText(NewTransaction.this, ret, 1000);
+								toast.setGravity(Gravity.TOP | Gravity.LEFT, 0, 0);
+								toast.show();
+							}
+						});
+
 					};
 				}.start();
 			}

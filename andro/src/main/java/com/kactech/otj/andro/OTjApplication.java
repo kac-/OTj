@@ -251,10 +251,11 @@ public class OTjApplication extends Application {
 		}
 	}
 
-	public void send(String account, Long amount) {
+	public String send(String account, Long amount) {
 		try {
 			if (!client.notarizeTransaction(account, amount)) {
 				Log.e("beta", "notarize unsuccessful");
+				return "notarize unsuccessful";
 				//Toast.makeText(this, "not sent", 500).show();
 			} else {
 				Transaction tx = new Transaction(null, System.currentTimeMillis() / 1000, account, -amount);
@@ -265,10 +266,12 @@ public class OTjApplication extends Application {
 				}
 				//Toast.makeText(this, "sent " + amount, 500).show();
 				Log.e("info", "sent " + amount);
+				return "sent " + amount;
 			}
 		} catch (Exception e) {
 			Log.e("beta", "notarize", e);
-			Toast.makeText(this, "notarize exception", 1000).show();
+			//Toast.makeText(this, "notarize exception", 1000).show();
+			return "notarize exception";
 		}
 	}
 
