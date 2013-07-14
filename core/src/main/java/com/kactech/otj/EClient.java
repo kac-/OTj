@@ -300,21 +300,26 @@ public class EClient implements Closeable, ReqNumManager {
 		boolean balanceRejected = false;
 		if (resp.getSuccess()) {
 			//takeNumsFrom(nums);
-			if (resp.getResponseLedger().getTransactions().size() > 1)
-				logger.warn("notarize response ledger contains more than 1 tx");
+			if (resp.getResponseLedger().getTransactions().size() != 1)
+				logger.warn("notarize response ledger contains other than 1 tx: "
+						+ resp.getResponseLedger().getTransactions().size());
 			OT.Transaction tx = resp.getResponseLedger().getTransactions().iterator().next();
-			for (OT.Item item : tx.getItems())
-				if (item.getType() == OT.Item.Type.atBalanceStatement) {
-					if (item.getStatus() == OT.Item.Status.rejection) {
-						logger.warn("notarize balance rejected");
+			if (tx.getItems() == null) {//TODO check this, android only!
+				logger.error("tx.getItems() == null");
+				balanceRejected = true;
+			} else
+				for (OT.Item item : tx.getItems())
+					if (item.getType() == OT.Item.Type.atBalanceStatement) {
+						if (item.getStatus() == OT.Item.Status.rejection) {
+							logger.warn("notarize balance rejected");
+							balanceRejected = true;
+							break;
+						}
+					} else if (item.getStatus() == OT.Item.Status.rejection) {
+						logger.warn("notarize transaction item rejected");
 						balanceRejected = true;
 						break;
 					}
-				} else if (item.getStatus() == OT.Item.Status.rejection) {
-					logger.warn("notarize transaction item rejected");
-					balanceRejected = true;
-					break;
-				}
 
 			nums.transactionNums.removeNum(transactionNum);
 			if (balanceRejected)
