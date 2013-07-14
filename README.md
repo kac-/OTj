@@ -12,7 +12,11 @@ Low-level client-side library for [Open Transactions](https://github.com/FellowT
 
 [otj app](otj.md) transfer tool with command-line syntax compatible to [opentxs](https://github.com/FellowTraveler/Open-Transactions/wiki/opentxs). Now with **FILTERS** to test malicious requests!
 
-~~Soon more...~~ **project suspended**
+project contains 4 modules:
+ * `./core` : core library
+ * `./more` : *otj app* and *OTjAlpha*
+ * `./faucet` : IRC silver faucet
+ * `./andro` : *OTjAndro* (zero-security transfrer client for *Android* 2.1+)
 
 --
 Special thanks to:
@@ -20,5 +24,5 @@ Special thanks to:
  * [FellowTraveler](https://github.com/FellowTraveler)
 
 --
-BTC donations for OTj project: [1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp](https://blockchain.info/address/1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp) - **THANKS!!!**
+BTC tips: [1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp](https://blockchain.info/address/1ESADvST7ubsFce7aEi2B6c6E2tYd4mHQp) - **THANKS!!!**
 
