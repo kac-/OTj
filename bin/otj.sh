@@ -50,4 +50,6 @@
 #   more details.
 #############################################################
 
-$(dirname $(readlink -f $0))/pomrunner.sh com.kactech.otj.examples.App_otj "$@ "
+DIR=$(dirname $(readlink -f $0))
+cd $DIR/../more
+$DIR/pomrunner.sh com.kactech.otj.examples.App_otj "$@ "
