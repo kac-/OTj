@@ -21,12 +21,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -41,7 +39,7 @@ import com.example.android.skeletonapp.R;
  * activity. Inside of its window, it places a single view: an EditText that
  * displays and edits some internal text.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends BaseActivity {
 	static final String TAG = "main";
 	static final int CONTACT_PICKER_RESULT = 1001;
 	static final int ACCOUNT_PICKER_RESULT = 1002;
@@ -58,8 +56,6 @@ public class MainActivity extends Activity {
 
 	public MainActivity() {
 	}
-
-	ProgressDialog progress;
 
 	/** Called with the activity is first created. */
 	@Override
@@ -108,24 +104,19 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
+				work(new Runnable() {
 
-				progress = ProgressDialog.show(MainActivity.this, "refresh", "refresh");
-				new Thread() {
+					@Override
 					public void run() {
-						((OTjApplication) getApplication()).refreshClient();
-						Looper.prepare();
-						progress.dismiss();
-						runOnUiThread(new Runnable() {
-
-							@Override
-							public void run() {
-								refreshView();
-							}
-						});
-					};
-				}.start();
-				//progress.show();
-
+						try {
+							((OTjApplication) getApplication()).refreshClient();
+							msg("refresh done");
+						} catch (Exception e) {
+							Log.e(TAG, "refreshClient()", e);
+							msg("refresh error");
+						}
+					}
+				}, "refreshing");
 			}
 		});
 		((Button) findViewById(R.id.show_info_button)).setOnClickListener(new View.OnClickListener() {
@@ -141,47 +132,50 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				progress = ProgressDialog.show(MainActivity.this, "refresh", "refresh");
-				new Thread() {
-					public void run() {
-						((OTjApplication) getApplication()).reloadNym();
-						Looper.prepare();
-						progress.dismiss();
-					};
-				}.start();
-			}
-		});
-
-		progress = ProgressDialog.show(this, "init", "init");
-		//progress.show();
-		new Thread() {
-			@Override
-			public void run() {
-
-				try {
-					((OTjApplication) getApplication()).loadAccountsAndNyms();
-				} catch (Exception e) {
-					Log.e(TAG, "init", e);
-					((OTjApplication) getApplication()).unload();
-					android.os.Process.killProcess(android.os.Process.myPid());
-				}
-				Looper.prepare();
-				progress.dismiss();
-				runOnUiThread(new Runnable() {
+				work(new Runnable() {
 
 					@Override
 					public void run() {
-						refreshView();
+						try {
+							((OTjApplication) getApplication()).reloadNym();
+							msg("reload done");
+						} catch (Exception e) {
+							Log.e(TAG, "reloading nym", e);
+							msg("reload error");
+						}
 					}
-				});
-			};
-		}.start();
+				}, "reloading nym");
+			}
+		});
 
 		txAdapter = new TransactionItemAdapter(this, R.layout.tx_listitem,
 				Collections.EMPTY_LIST);
 		txList.setAdapter(txAdapter);
 
 		messages.setVisibility(View.INVISIBLE);
+
+		handler = new BaseHandler(this) {
+			public void handleMessage(Message msg) {
+				refreshView();
+				super.handleMessage(msg);
+			};
+		};
+
+		work(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					((OTjApplication) getApplication()).loadAccountsAndNyms();
+				} catch (Exception e) {
+					Log.e(TAG, "init", e);
+					((OTjApplication) getApplication()).unload();
+					finish();
+					return;
+				}
+				msg("init done");
+			}
+		}, "init", "init");
 	}
 
 	@Override
@@ -202,7 +196,7 @@ public class MainActivity extends Activity {
 		if (resultCode == RESULT_OK) {
 			switch (requestCode) {
 			case CONTACT_PICKER_RESULT:
-				Log.i("pick", data.toString());
+				Log.i(TAG, "pick " + data.toString());
 				String contact = data.getData().getLastPathSegment();
 				AssetAccount a;
 
@@ -213,7 +207,7 @@ public class MainActivity extends Activity {
 					a = l.get(l.size() - 1);
 					a.account = new SimpleDateFormat("HH:mm:ss").format(new Date());
 					int u = a.update(getContentResolver());
-					Log.i("otj", "rows updated " + u);
+					Log.i(TAG, "rows updated " + u);
 				} else {
 					a = new AssetAccount();
 					a.contact = contact;
@@ -221,14 +215,14 @@ public class MainActivity extends Activity {
 					a.asset = getAsset();
 					a.account = "newacct123";
 					boolean saved = a.insert(getContentResolver());
-					Log.i("otj", "account saved: " + saved);
+					Log.i(TAG, "account saved: " + saved);
 				}
 				break;
 			case ACCOUNT_PICKER_RESULT:
 				break;
 			}
 		} else {
-			Log.w("debug", "Warning: activity result not ok");
+			Log.w(TAG, "Warning: activity result not ok");
 		}
 	};
 
@@ -246,4 +240,5 @@ public class MainActivity extends Activity {
 		Log.d(TAG, "destroy");
 		((OTjApplication) getApplication()).unload();
 	}
+
 }
