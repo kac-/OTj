@@ -55,6 +55,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -506,6 +507,49 @@ public class EClient implements Closeable, ReqNumManager {
 			return processCachedNymbox();
 		else
 			return null;
+	}
+
+	public boolean sendUserMessage(String nymID, String text) {
+		MSG.CheckUserResp cu = getClient().checkUser(nymID);
+		if (!cu.getSuccess()) {
+			String msg = "recipient not found";
+			logger.error(msg);
+			return false;
+		}
+		PublicKey recipientPublicKey = null;
+		if (cu.getHasCredentials()) {
+			OT.User credentialList = cu.getCredentialList().getEntity();
+			//String nymIDSource = credentialList.getNymIDSource().getRaw();
+			//recipientPublicKey = (RSAPublicKey) Utils.fromIDSource(nymIDSource);
+			String keyID = credentialList.getKeyCredential().getID();
+			OT.KeyCredential cred = (OT.KeyCredential) cu.getCredentials().get(keyID);
+
+			//System.out.println(Engines.gson.toJson(cred));
+			List<OT.KeyValue> list = cred.getMasterSigned().getPublicContents().getPublicInfos();
+			for (OT.KeyValue kv : list) {
+				if (kv.getKey().equals("E"))
+					recipientPublicKey = Utils.fromRawPublicInfo(kv.getValue(), false);
+			}
+			if (recipientPublicKey == null) {
+				String msg = "recipient encryption key not found";
+				logger.error(msg);
+				return false;
+			}
+		} else {
+			String str = Utils.unarmor(cu.getNymPublicKey(), true);
+			byte[] packed = Utils.base64Decode(str);
+			try {
+				str = Utils.unpack(packed, String.class);
+				recipientPublicKey = Utils.pemReadRSAPublicKey(str);
+			} catch (Exception e) {
+				logger.error("reading nymm public key", e);
+				return false;
+			}
+
+		}
+		MSG.SendUserMessageResp resp = getClient().sendUserMessage(text,
+				nymID, recipientPublicKey);
+		return resp.getSuccess();
 	}
 
 	private MSG.ProcessNymboxResp processCachedNymbox() {
