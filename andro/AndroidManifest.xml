@@ -48,7 +48,8 @@
 
     <application
         android:name="com.kactech.otj.andro.OTjApplication"
-        android:label="@string/skeleton_app" >
+        android:label="@string/skeleton_app"
+        android:theme="@style/MyTheme" >
         <activity android:name="com.kactech.otj.andro.MainActivity" >
             <intent-filter>
 
@@ -79,7 +80,7 @@
             android:label="@string/title_activity_messages_view" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-<!--                  <category android:name="android.intent.category.LAUNCHER" /> -->
+                <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
             </intent-filter>
         </activity>
         <activity
