@@ -37,19 +37,19 @@
             android1:id="@+id/refresh_button"
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
-            android1:text="r" />
+            android1:text="ref" />
 
         <Button
             android1:id="@+id/show_info_button"
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
-            android1:text="i" />
+            android1:text="inf" />
         
          <Button
             android1:id="@+id/reload_nym_button"
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
-            android1:text="rn" />
+            android1:text="rnym" />
 
     </LinearLayout>
 
