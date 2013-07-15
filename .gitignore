@@ -1,1 +1,7 @@
 target/
+.classpath
+.project
+.settings
+log.txt*
+debug.txt*
+mvn.classpath
