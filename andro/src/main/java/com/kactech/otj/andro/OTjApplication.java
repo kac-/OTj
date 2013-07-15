@@ -16,7 +16,6 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.ContactsContract;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.kactech.otj.Client;
 import com.kactech.otj.EClient;
@@ -27,6 +26,7 @@ import com.kactech.otj.examples.IncomingTransfrerFilter;
 import com.kactech.otj.examples.UserMessagesFilter;
 
 public class OTjApplication extends Application {
+	static final String TAG = "app";
 	public Map<String, String> contactIdToName = new HashMap<String, String>();
 	public Map<String, AssetAccount> accountCache = new HashMap<String, AssetAccount>();
 	public Map<String, Pseudonym> nymCache = new HashMap<String, Pseudonym>();
@@ -44,7 +44,7 @@ public class OTjApplication extends Application {
 
 	@Override
 	public void onCreate() {
-		Log.i("app", "create");
+		Log.i(TAG, "create");
 		dbHelper = new DBHelper(this);
 		txStore = new TransactionStore(dbHelper);
 		msgStore = new MessageStore(dbHelper);
@@ -285,7 +285,11 @@ public class OTjApplication extends Application {
 	}
 
 	public boolean sendUserMessage(String nym, String msg) {
-		//TODO
-		return false;
+		try {
+			return client.sendUserMessage(nym, msg);
+		} catch (Exception e) {
+			Log.e(TAG, "send message", e);
+			return false;
+		}
 	}
 }
