@@ -13,6 +13,8 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.example.android.skeletonapp.R;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 public class NewTransaction extends BaseActivity {
 	static final String TAG = "new tx";
@@ -22,6 +24,8 @@ public class NewTransaction extends BaseActivity {
 	EditText amount;
 	EditText account;
 	Button pick;
+	Button send;
+	Button scan;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -31,10 +35,12 @@ public class NewTransaction extends BaseActivity {
 		amount = (EditText) findViewById(R.id.new_tx_amount);
 		account = (EditText) findViewById(R.id.new_tx_account);
 		pick = (Button) findViewById(R.id.new_tx_pick);
+		send = (Button) findViewById(R.id.new_tx_send);
+		scan = (Button) findViewById(R.id.new_tx_scan);
 
 		handler = new BaseHandler(this);
 
-		((Button) findViewById(R.id.new_tx_send)).setOnClickListener(new View.OnClickListener() {
+		send.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
@@ -84,6 +90,14 @@ public class NewTransaction extends BaseActivity {
 				startActivityForResult(intent, PICK);
 			}
 		});
+		scan.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				IntentIntegrator integrator = new IntentIntegrator(NewTransaction.this);
+				integrator.initiateScan();
+			}
+		});
 
 		account.setText("5m0F1N9n68J07kowFAUm3Eto7hnl0R2jnVEhf99LVno");
 	}
@@ -110,6 +124,13 @@ public class NewTransaction extends BaseActivity {
 			} else if (requestCode == PICK_ACCT) {
 				String acct = data.getExtras().getString("selected");
 				setAccount(data.getExtras().getString("hold"), acct);
+			} else if (requestCode == IntentIntegrator.REQUEST_CODE) {
+				IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+				if (scanResult != null) {
+					setAccount("scan", scanResult.getContents());
+					toast("scan done");
+				} else
+					toast("invalid scan");
 			}
 		}
 	}
