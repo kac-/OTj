@@ -96,7 +96,7 @@ public class MainActivity extends BaseActivity {
 
 			@Override
 			public void onClick(View arg0) {
-				Intent intent = new Intent(MainActivity.this, MessagesView.class);
+				Intent intent = new Intent(MainActivity.this, SendMessage.class);
 				startActivity(intent);
 			}
 		});
@@ -152,8 +152,6 @@ public class MainActivity extends BaseActivity {
 				Collections.EMPTY_LIST);
 		txList.setAdapter(txAdapter);
 
-		messages.setVisibility(View.INVISIBLE);
-
 		handler = new BaseHandler(this) {
 			public void handleMessage(Message msg) {
 				refreshView();
@@ -187,7 +185,7 @@ public class MainActivity extends BaseActivity {
 
 	void refreshView() {
 		txAdapter.setTransactions(((OTjApplication) getApplication()).getTransactions());
-		messages.setText(Integer.toString(((OTjApplication) getApplication()).getMessagesCount()));
+		//messages.setText(Integer.toString(((OTjApplication) getApplication()).getMessagesCount()));
 		balance.setText(Long.toString(((OTjApplication) getApplication()).getBalance()));
 	}
 

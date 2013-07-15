@@ -87,6 +87,10 @@
             android:name="com.kactech.otj.andro.Info"
             android:label="@string/title_activity_info" >
         </activity>
+        <activity
+            android:name="com.kactech.otj.andro.SendMessage"
+            android:label="@string/title_activity_send_message" >
+        </activity>
     </application>
 
 </manifest>

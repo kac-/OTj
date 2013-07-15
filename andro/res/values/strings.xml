@@ -37,5 +37,6 @@
     <string name="title_activity_pick_account">PickAccount</string>
     <string name="title_activity_messages_view">MessagesView</string>
     <string name="title_activity_info">Info</string>
+    <string name="title_activity_send_message">SendMessage</string>
 
 </resources>

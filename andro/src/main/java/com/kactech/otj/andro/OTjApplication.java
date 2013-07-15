@@ -284,4 +284,8 @@ public class OTjApplication extends Application {
 		client.reloadState();
 	}
 
+	public boolean sendUserMessage(String nym, String msg) {
+		//TODO
+		return false;
+	}
 }

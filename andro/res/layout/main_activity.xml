@@ -31,7 +31,7 @@
             android1:id="@+id/show_messages"
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
-            android1:text="0" />
+            android1:text="msg" />
 
         <Button
             android1:id="@+id/refresh_button"
